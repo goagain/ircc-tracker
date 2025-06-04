@@ -47,7 +47,7 @@ class EmailSender(EmailSenderBase):
         self.from_email = Config.FROM_EMAIL
         self.admin_email = Config.ADMIN_EMAIL
         
-    def send_status_update_email(self, to_email: str, ircc_username: str, application_number: str, changes: str, timestamp: datetime):
+    def send_status_update_email(self, to_email: str, ircc_username: str, application_number: str, changes: str, timestamp: datetime) -> bool:
         """Send status update email"""
         try:
             # Create email object
@@ -211,7 +211,7 @@ IRCC Tracker - Keep you informed about your application progress
         """Send a test email"""
         return self.send_status_update_email(self.admin_email, "test application", "test application number", ["test change"], datetime.now())
 # Global email sender instance
-if Config.EMAIL_SENDER == "fake":
-    email_sender = FakeEmailSender()
-else:
+if Config.SMTP_SERVER:
     email_sender = EmailSender()
+else:
+    email_sender = FakeEmailSender()

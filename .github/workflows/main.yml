@@ -64,5 +64,63 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+          body: |
+            ## Docker Image
+
+            ### Pull Image
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.release_tag }}
+            ```
+
+            ### Run Container
+            ```bash
+            docker run -d \
+              -p 5000:5000 \
+              -e MONGODB_URL=mongodb://mongodb:27017/ircc_tracker \
+              -e SMTP_SERVER=smtp.gmail.com \
+              -e SMTP_PORT=587 \
+              -e SMTP_USERNAME=your-email@gmail.com \
+              -e SMTP_PASSWORD=your-app-password \
+              -e SENDER_EMAIL=your-email@gmail.com \
+              -e SECRET_KEY=your-secret-key \
+              -e ADMIN_EMAIL=admin@example.com \
+              -e ADMIN_PASSWORD=admin-password \
+              --name ircc-tracker \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.release_tag }}
+            ```
+
+            ### Docker Compose
+            ```yaml
+            version: '3.8'
+            services:
+              app:
+                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.release_tag }}
+                ports:
+                  - "5000:5000"
+                environment:
+                  - MONGODB_URL=mongodb://mongodb:27017/ircc_tracker
+                  - SMTP_SERVER=smtp.gmail.com
+                  - SMTP_PORT=587
+                  - SMTP_USERNAME=${SMTP_USERNAME}
+                  - SMTP_PASSWORD=${SMTP_PASSWORD}
+                  - SENDER_EMAIL=${SENDER_EMAIL}
+                  - SECRET_KEY=${SECRET_KEY}
+                  - ADMIN_EMAIL=${ADMIN_EMAIL}
+                  - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+                depends_on:
+                  - mongodb
+                restart: unless-stopped
+
+              mongodb:
+                image: mongo:latest
+                ports:
+                  - "27017:27017"
+                volumes:
+                  - mongodb_data:/data/db
+                restart: unless-stopped
+
+            volumes:
+              mongodb_data:
+            ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
