@@ -43,8 +43,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=semver,pattern={{version}},enable=${{ startsWith(github.event.inputs.release_tag, 'v') }}
-
+            type=raw,value=${{ github.event.inputs.release_tag }},enable=${{ startsWith(github.event.inputs.release_tag, 'v') }}
+        
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
