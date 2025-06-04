@@ -150,7 +150,7 @@ def update_credential(credential_id: str):
         # Update credential information
         if ircc_password:
             credential.encrypted_password = encryption_manager.encrypt(ircc_password)
-            if not IRCCAgentFactory.get_ircc_agent(credential.application_type).verify_ircc_credentials(request.current_user['user_id'], credential.ircc_username, ircc_password):
+            if not IRCCAgentFactory.get_ircc_agent(credential.application_type).verify_ircc_credentials(request.current_user['email'], credential.ircc_username, ircc_password):
                 return jsonify({'error': 'Invalid IRCC credentials'}), 400
         
         if notification_email:

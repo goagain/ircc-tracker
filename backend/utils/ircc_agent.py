@@ -115,22 +115,12 @@ class IRCCAgent:
 
     def verify_ircc_credentials(self, user_id: str, ircc_username: str, ircc_password: str) -> bool:
         """Verify IRCC credentials"""
+        del self.token_cache[(user_id, ircc_username)]
         token = self._get_token(user_id, ircc_username, ircc_password)
         if not token:
             return False
             
-        # Verify token
-        headers = self._get_auth_headers(token)
-        try:
-            response = requests.post(
-                self.cognito_url,
-                headers=headers,
-                json={},
-                timeout=30
-            )
-            return response.status_code == 200
-        except Exception:
-            return False
+        return True
 
     @with_token
     def get_application_summary(self, credential: IRCCCredential, token: Optional[str]=None) -> Dict[str, Any]:
