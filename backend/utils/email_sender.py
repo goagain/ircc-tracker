@@ -13,16 +13,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EmailSenderBase:
-    def send_status_update_email(self, to_email, ircc_username, old_status, new_status, timestamp=None):
+    def send_status_update_email(self, to_email, ircc_username, old_status, new_status, timestamp=None) -> bool:
         pass
     
-    def send_error_notification(self, to_email, ircc_username, error_message):
+    def send_error_notification(self, to_email, ircc_username, error_message) -> bool:
         pass
     
-    def test_connection(self):
+    def test_connection(self) -> bool:
         pass
 
-    def send_test_email(self):
+    def send_test_email(self) -> bool:
         pass
 
 class FakeEmailSender(EmailSenderBase):
