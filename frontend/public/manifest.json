@@ -1,0 +1,16 @@
+{
+  "short_name": "IRCC Tracker",
+  "name": "Canada IRCC Application Status Tracker",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#d32f2f",
+  "background_color": "#ffffff",
+  "description": "Track your Canada IRCC immigration application status automatically"
+} 
