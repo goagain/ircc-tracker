@@ -1,6 +1,6 @@
 """Main Flask application module for the IRCC Tracker API server."""
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from models.database import db_instance
 from models.user import User
@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     """Create Flask application"""
-    app = Flask(__name__)
+    app = Flask(__name__, 
+                static_folder='static',
+                static_url_path='')
     
     # Configure application
     app.config['SECRET_KEY'] = Config.SECRET_KEY
@@ -53,20 +55,17 @@ def create_app():
             'version': '1.0.0'
         }), 200
     
-    # Root path
-    @app.route('/', methods=['GET'])
-    def root():
-        return jsonify({
-            'message': 'Welcome to IRCC Tracker API',
-            'version': '1.0.0',
-            'endpoints': {
-                'auth': '/api/auth',
-                'credentials': '/api/credentials',
-                'application': '/api/application',
-                'admin': '/api/admin',
-                'health': '/api/health'
-            }
-        }), 200
+    # Serve static files
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve(path):
+        if path.startswith('api/'):
+            return jsonify({'error': 'API endpoint not found'}), 404
+            
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return send_from_directory(app.static_folder, 'index.html')
     
     # Error handling
     @app.errorhandler(404)
