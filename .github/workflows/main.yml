@@ -19,8 +19,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -63,5 +64,6 @@ jobs:
           name: Release ${{ github.event.inputs.release_tag }}
           draft: false
           prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
