@@ -145,9 +145,13 @@ class ApplicationRecord:
         return None
 
     @classmethod
-    def get_latest_record(cls, application_number: str) -> 'ApplicationRecord':
+    def get_latest_record(cls, application_number: str) -> Optional['ApplicationRecord']:
         """Get latest application record"""
-        return cls.get_by_application_number(application_number, None)[0]
+        records = cls.get_by_application_number(application_number, None)
+        if records:
+            return records[0]
+        else:
+            return None
     
     @classmethod
     def get_by_application_number(cls, application_number: str, timestamp: int | str | None = None) -> List['ApplicationRecord']:

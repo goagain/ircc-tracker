@@ -1,3 +1,4 @@
+from types import TracebackType
 import requests
 import json
 import re
@@ -34,20 +35,31 @@ class IRCCChecker:
         })
     
     @classmethod
-    def compare_application_details(cls, current_application_details: ApplicationRecord, new_application_details: ApplicationRecord) -> list[ApplicationRecordChange]:
+    def compare_application_details(cls, current_application_details: ApplicationRecord | None, new_application_details: ApplicationRecord | None) -> list[ApplicationRecordChange]:
         """Compare application details"""
+        
+        if current_application_details is None:
+            current_application_details = ApplicationRecord(
+                application_number="",
+                uci="",
+                last_updated_time=0,
+                status="",
+                activities=[],
+            history=[],
+        )
+        
         changes = []
         if current_application_details.status != new_application_details.status:
             changes.append(ApplicationRecordChange("Application Status", "Changed", current_application_details.status, new_application_details.status))
         if current_application_details.last_updated_time != new_application_details.last_updated_time:
             changes.append(ApplicationRecordChange("Last Updated Time", "Changed", current_application_details.last_updated_time, new_application_details.last_updated_time))
-        activities = {activity.activity: activity for activity in new_application_details.activities}
+        current_activities = {activity.activity: activity for activity in new_application_details.activities}
         new_activities = {activity.activity: activity for activity in current_application_details.activities}
-        for activity in activities:
-            if activity not in new_activities:
-                changes.append(ApplicationRecordChange(activity, "Added", activities[activity].status, new_activities[activity].status))
-            elif activities[activity].status != new_activities[activity].status:
-                changes.append(ApplicationRecordChange(activity, "Changed", activities[activity].status, new_activities[activity].status))
+        for activity in new_activities:
+            if activity not in current_activities:
+                changes.append(ApplicationRecordChange(activity, "Added", "N/A", new_activities[activity].status))
+            elif current_activities[activity].status != new_activities[activity].status:
+                changes.append(ApplicationRecordChange(activity, "Changed", current_activities[activity].status, new_activities[activity].status))
 
         # Sort history by time
         history = sorted(current_application_details.history, key=lambda x: x.time)
@@ -100,15 +112,7 @@ class IRCCChecker:
         except Exception as e:
             error_msg = f"Error checking status for user {credential.ircc_username}: {str(e)}"
             logger.error(error_msg)
-            
-            # Send error notification email
-            if credential.email:
-                email_sender.send_error_notification(
-                    credential.email,
-                    credential.ircc_username,
-                    str(e)
-                )
-            return False
+            raise
     
     def check_all_credentials(self):
         """Check status of all active credentials"""

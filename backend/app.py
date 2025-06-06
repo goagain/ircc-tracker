@@ -1,6 +1,6 @@
 """Main Flask application module for the IRCC Tracker API server."""
 
-from flask import Flask, jsonify, redirect, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models.database import db_instance
 from models.user import User
@@ -55,23 +55,25 @@ def create_app():
             'version': '1.0.0'
         }), 200
     
-    # Serve static files
+    # Serve static files and handle frontend routes
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def serve(path):
-        if path.startswith('api/'):
+        if path.startswith('api/') and not any(rule.endpoint != 'static' and rule.rule.startswith('/api/') for rule in app.url_map.iter_rules()):
             return jsonify({'error': 'API endpoint not found'}), 404
             
         if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
             return send_from_directory(app.static_folder, path)
-        else:
-            return send_from_directory(app.static_folder, 'index.html')
+            
+        return send_from_directory(app.static_folder, 'index.html')
     
-    # Error handling
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({'error': 'Endpoint not found'}), 404
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'API endpoint not found'}), 404
+        return send_from_directory(app.static_folder, 'index.html')
     
+    # Error handling
     @app.errorhandler(500)
     def internal_error(error):
         return jsonify({'error': 'Internal server error'}), 500
