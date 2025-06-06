@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, List, Tag, Typography, Space, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { ApplicationRecord } from '../types/application';
-import { applicationService } from '../services/applicationService';
+import { ApplicationRecord, ActivityStatus, ActivityType, BilingualText } from '../types/application';
+import applicationService from '../services/applicationService';
 
 const { Title, Text } = Typography;
 
@@ -14,8 +14,29 @@ const ApplicationList: React.FC = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const { applications } = await applicationService.getAllApplications();
-                setApplications(applications);
+                const response = await applicationService.getAllApplications();
+                const appRecords: ApplicationRecord[] = response.data.applications.map(app => ({
+                    application_number: app.uci, // 使用 UCI 作为临时应用编号
+                    uci: app.uci,
+                    status: app.status,
+                    last_updated_time: Date.now(), // 使用当前时间作为最后更新时间
+                    activities: app.activities,
+                    history: app.history.map(record => ({
+                        time: record.time,
+                        is_new: record.isNew,
+                        title: {
+                            en: record.title.en || '',
+                            fr: record.title.fr || ''
+                        },
+                        text: {
+                            en: record.text.en || '',
+                            fr: record.text.fr || ''
+                        },
+                        description: record.text.en || record.text.fr || '',
+                        timestamp: record.time
+                    }))
+                }));
+                setApplications(appRecords);
             } catch (err: any) {
                 message.error(err.response?.data?.error || 'Failed to fetch application list');
             } finally {
@@ -26,16 +47,35 @@ const ApplicationList: React.FC = () => {
         fetchApplications();
     }, []);
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: ActivityStatus) => {
         switch (status) {
-            case 'inProgress':
+            case ActivityStatus.IN_PROGRESS:
                 return 'processing';
-            case 'completed':
+            case ActivityStatus.COMPLETED:
                 return 'success';
-            case 'notStarted':
+            case ActivityStatus.NOT_STARTED:
                 return 'default';
             default:
                 return 'default';
+        }
+    };
+
+    const getActivityLabel = (activity: ActivityType): string => {
+        switch (activity) {
+            case ActivityType.LANGUAGE:
+                return 'Language Test';
+            case ActivityType.BACKGROUND_VERIFICATION:
+                return 'Background Verification';
+            case ActivityType.RESIDENCY:
+                return 'Residency Requirement';
+            case ActivityType.PROHIBITIONS:
+                return 'Prohibitions';
+            case ActivityType.CITIZENSHIP_TEST:
+                return 'Citizenship Test';
+            case ActivityType.CITIZENSHIP_OATH:
+                return 'Citizenship Oath';
+            default:
+                return activity;
         }
     };
 
@@ -72,8 +112,8 @@ const ApplicationList: React.FC = () => {
                                 </Space>
                                 <Space>
                                     <Tag color={getStatusColor(application.status)}>
-                                        {application.status === 'inProgress' ? 'In Progress' : 
-                                         application.status === 'completed' ? 'Completed' : 'Not Started'}
+                                        {application.status === ActivityStatus.IN_PROGRESS ? 'In Progress' : 
+                                         application.status === ActivityStatus.COMPLETED ? 'Completed' : 'Not Started'}
                                     </Tag>
                                     <Text type="secondary">
                                         Last Updated: {formatDateTime(application.last_updated_time)}
@@ -85,17 +125,11 @@ const ApplicationList: React.FC = () => {
                                     renderItem={(activity) => (
                                         <List.Item>
                                             <Text>
-                                                {activity.activity === 'language' ? 'Language Test' :
-                                                 activity.activity === 'backgroundVerification' ? 'Background Verification' :
-                                                 activity.activity === 'residency' ? 'Residency Requirement' :
-                                                 activity.activity === 'prohibitions' ? 'Prohibitions' :
-                                                 activity.activity === 'citizenshipTest' ? 'Citizenship Test' :
-                                                 activity.activity === 'citizenshipOath' ? 'Citizenship Oath' :
-                                                 activity.activity}
+                                                {getActivityLabel(activity.activity)}
                                             </Text>
                                             <Tag color={getStatusColor(activity.status)}>
-                                                {activity.status === 'inProgress' ? 'In Progress' : 
-                                                 activity.status === 'completed' ? 'Completed' : 'Not Started'}
+                                                {activity.status === ActivityStatus.IN_PROGRESS ? 'In Progress' : 
+                                                 activity.status === ActivityStatus.COMPLETED ? 'Completed' : 'Not Started'}
                                             </Tag>
                                         </List.Item>
                                     )}

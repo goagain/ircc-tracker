@@ -1,9 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Badge, Button, Collapse, ProgressBar } from 'react-bootstrap';
+import { Card, Table, Badge, Button, Collapse, ProgressBar, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import applicationService from '../services/applicationService';
+import { formatDate } from '../utils/dateUtils';
 
-const CredentialsList = ({ 
+interface Activity {
+  activity: string;
+  status: string;
+  order: number;
+}
+
+interface HistoryRecord {
+  time: number;
+  isNew: boolean;
+  isWaiting: boolean;
+  type: string;
+  title: {
+    en?: string;
+    fr?: string;
+  };
+  text: {
+    en?: string;
+    fr?: string;
+  };
+  activity?: string;
+}
+
+interface ApplicationDetails {
+  details: any; // TODO: Define proper type for application details
+}
+
+interface Credential {
+  id: string;
+  user_id: string;
+  ircc_username: string;
+  email: string;
+  is_active: boolean;
+  last_status: string;
+  last_checked: string;
+  last_timestamp: string;
+  application_number: string;
+}
+
+interface CredentialsListProps {
+  credentials: Credential[];
+  onDelete: (username: string) => void;
+  showUserColumn?: boolean;
+  showActions?: boolean;
+  title?: string;
+  emptyMessage?: string;
+  emptySubMessage?: string;
+  addButtonText?: string;
+  addButtonLink?: string;
+}
+
+const CredentialsList: React.FC<CredentialsListProps> = ({ 
   credentials, 
   onDelete, 
   showUserColumn = false,
@@ -14,11 +65,11 @@ const CredentialsList = ({
   addButtonText = "Add New Credential",
   addButtonLink = "/credentials/new"
 }) => {
-  const [expandedRows, setExpandedRows] = useState({});
-  const [applicationDetails, setApplicationDetails] = useState({});
-  const [loadingDetails, setLoadingDetails] = useState({});
+  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const [applicationDetails, setApplicationDetails] = useState<Record<string, ApplicationDetails>>({});
+  const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({});
 
-  const toggleRow = async (index, credential) => {
+  const toggleRow = async (index: number, credential: Credential): Promise<void> => {
     const newExpandedState = !expandedRows[index];
     setExpandedRows(prev => ({
       ...prev,
@@ -47,44 +98,58 @@ const CredentialsList = ({
     }
   };
 
-  const getStatusBadge = (status) => {
-    if (!status) return <Badge bg="secondary">Unknown</Badge>;
-
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('processing') || statusLower.includes('progress')) {
-      return <Badge bg="warning">Processing</Badge>;
-    } else if (statusLower.includes('approved') || statusLower.includes('completed')) {
-      return <Badge bg="success">Approved</Badge>;
-    } else if (statusLower.includes('refused') || statusLower.includes('rejected')) {
-      return <Badge bg="danger">Rejected</Badge>;
-    } else if (statusLower.includes('submitted')) {
-      return <Badge bg="info">Submitted</Badge>;
-    } else {
-      return <Badge bg="secondary">{status}</Badge>;
+  const getStatusBadge = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'inprogress':
+        return <Badge bg="primary">In Progress</Badge>;
+      case 'completed':
+        return <Badge bg="success">Completed</Badge>;
+      case 'notstarted':
+        return <Badge bg="secondary">Not Started</Badge>;
+      default:
+        return <Badge bg="secondary">{status || 'Unknown'}</Badge>;
     }
   };
 
-  const getActivityStatusBadge = (status) => {
+  const getActivityStatusBadge = (status: string): React.ReactElement => {
     switch (status.toLowerCase()) {
       case 'completed':
         return <Badge bg="success">Completed</Badge>;
-      case 'in_progress':
-        return <Badge bg="warning">In Progress</Badge>;
-      case 'not_started':
+      case 'inprogress':
+        return <Badge bg="primary">In Progress</Badge>;
+      case 'notstarted':
         return <Badge bg="secondary">Not Started</Badge>;
+      case 'rejected':
+        return <Badge bg="danger">Rejected</Badge>;
+      case 'refused':
+        return <Badge bg="danger">Refused</Badge>;
+      case 'withdrawn':
+        return <Badge bg="danger">Withdrawn</Badge>;
       default:
         return <Badge bg="secondary">{status}</Badge>;
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString({ 
-      timeZoneName: 'short'
-    });
+  const getActivityName = (activity: string): string => {
+    switch (activity) {
+      case 'citizenshipOath':
+        return 'Citizenship Oath';
+      case 'citizenshipTest':
+        return 'Citizenship Test';
+      case 'prohibitions':
+        return 'Prohibitions';
+      case 'residency':
+        return 'Residency';
+      case 'backgroundVerification':
+        return 'Background Verification';
+      case 'language':
+        return 'Language';
+      default:
+        return activity;
+    }
   };
 
-  const renderActivities = (activities) => {
+  const renderActivities = (activities: Activity[] | undefined): React.ReactElement => {
     if (!activities || activities.length === 0) {
       return <p className="text-muted mb-0">No activity information</p>;
     }
@@ -107,7 +172,7 @@ const CredentialsList = ({
             <div key={idx} className="activity-item mb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>{activity.activity}</strong>
+                  <strong>{getActivityName(activity.activity)}</strong>
                 </div>
                 {getActivityStatusBadge(activity.status)}
               </div>
@@ -118,7 +183,7 @@ const CredentialsList = ({
     );
   };
 
-  const renderHistory = (history) => {
+  const renderHistory = (history: HistoryRecord[] | undefined): React.ReactElement => {
     if (!history || history.length === 0) {
       return <p className="text-muted mb-0">No history records</p>;
     }
@@ -141,7 +206,7 @@ const CredentialsList = ({
                 <div className="d-flex justify-content-between">
                   <strong>{record.title.en || record.title.fr}</strong>
                   <small className="text-muted">
-                    {formatDate(record.time)}
+                    {formatDate(new Date(record.time).toString())}
                   </small>
                 </div>
                 <div className="text-muted small mt-1">
@@ -236,7 +301,7 @@ const CredentialsList = ({
                       }
                     </td>
                     {showActions && (
-                      <td onClick={(e) => e.stopPropagation()}>
+                      <td>
                         <Link
                           to={`/credentials/edit/${credential.id}`}
                           className="btn btn-outline-primary btn-sm me-2"
@@ -248,7 +313,6 @@ const CredentialsList = ({
                           variant="outline-danger"
                           size="sm"
                           onClick={() => onDelete(credential.ircc_username)}
-                          title="Delete Credential"
                         >
                           <i className="bi bi-trash"></i>
                         </Button>
@@ -256,25 +320,31 @@ const CredentialsList = ({
                     )}
                   </tr>
                   <tr>
-                    <td colSpan={showUserColumn ? 8 : 7} className="p-0">
+                    <td colSpan={showActions ? 8 : 7} className="p-0">
                       <Collapse in={expandedRows[index]}>
                         <div className="p-3 bg-light">
                           {loadingDetails[credential.application_number] ? (
                             <div className="text-center py-3">
                               <div className="spinner-border text-primary" role="status">
-                                <span className="visually-hidden">加载中...</span>
+                                <span className="visually-hidden">Loading...</span>
                               </div>
                             </div>
+                          ) : applicationDetails[credential.application_number] ? (
+                            <div>
+                              <Row className="g-0">
+                                <Col md={6} className="pe-3">
+                                  <h6 className="mb-3">Application Details</h6>
+                                  {renderActivities(applicationDetails[credential.application_number].details.activities)}
+                                </Col>
+                                <Col md={6} className="ps-3 border-start">
+                                  <h6 className="mb-3">History</h6>
+                                  {renderHistory(applicationDetails[credential.application_number].details.history)}
+                                </Col>
+                              </Row>
+                            </div>
                           ) : (
-                            <div className="row">
-                              <div className="col-md-6">
-                                <h6 className="mb-3">Application Progress</h6>
-                                {renderActivities(applicationDetails[credential.application_number]?.details?.activities)}
-                              </div>
-                              <div className="col-md-6">
-                                <h6 className="mb-3">Status History</h6>
-                                {renderHistory(applicationDetails[credential.application_number]?.details?.history)}
-                              </div>
+                            <div className="text-center py-3">
+                              <p className="text-muted mb-0">No application details available</p>
                             </div>
                           )}
                         </div>

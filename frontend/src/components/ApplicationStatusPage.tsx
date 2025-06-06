@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Timeline, Spin, message } from 'antd';
-import { ApplicationRecord } from '../types/application';
-import { applicationService } from '../services/applicationService';
+import { ApplicationRecord, BilingualText } from '../types/application';
+import applicationService from '../services/applicationService';
 
 const ApplicationStatusPage: React.FC = () => {
     const { applicationNumber } = useParams<{ applicationNumber: string }>();
@@ -15,8 +15,29 @@ const ApplicationStatusPage: React.FC = () => {
             if (!applicationNumber) return;
             
             try {
-                const data = await applicationService.getApplicationStatus(applicationNumber);
-                setApplication(data);
+                const response = await applicationService.getApplication(applicationNumber);
+                const appData = response.data.data;
+                setApplication({
+                    application_number: applicationNumber,
+                    uci: appData.uci,
+                    status: appData.status,
+                    last_updated_time: Date.now(),
+                    activities: appData.activities,
+                    history: appData.history.map(record => ({
+                        time: record.time,
+                        is_new: record.isNew,
+                        title: {
+                            en: record.title.en || '',
+                            fr: record.title.fr || ''
+                        },
+                        text: {
+                            en: record.text.en || '',
+                            fr: record.text.fr || ''
+                        },
+                        description: record.text.en || record.text.fr || '',
+                        timestamp: record.time
+                    }))
+                });
             } catch (err: any) {
                 if (err.response?.status === 401) {
                     message.error('Please login first');

@@ -1,38 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
-const Login = ({ onLogin }) => {
-  const [formData, setFormData] = useState({
+interface FormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const Register: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
+    confirmPassword: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
+
+    // Validate password
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await authService.register(formData.email, formData.password);
       
-      if (response.data.token && response.data.user) {
-        onLogin(response.data.user, response.data.token);
-        navigate('/dashboard');
+      if (response.message) {
+        setSuccess('Registration successful! Please log in to your account.');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       }
-    } catch (error) {
-      setError(error.response?.data?.error || 'Login failed, please try again later');
+    } catch (error: any) {
+      setError(error.response?.error || 'Registration failed, please try again later');
     } finally {
       setLoading(false);
     }
@@ -47,14 +71,20 @@ const Login = ({ onLogin }) => {
               <div className="text-center mb-4">
                 <h2 className="text-primary">
                   <span className="canada-flag">🍁</span>
-                  Login
+                  Register
                 </h2>
-                <p className="text-muted">Login to your IRCC Tracker account</p>
+                <p className="text-muted">Create your IRCC Tracker account</p>
               </div>
 
               {error && (
                 <Alert variant="danger" className="mb-3">
                   {error}
+                </Alert>
+              )}
+
+              {success && (
+                <Alert variant="success" className="mb-3">
+                  {success}
                 </Alert>
               )}
 
@@ -66,9 +96,12 @@ const Login = ({ onLogin }) => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Please enter your email"
+                    placeholder="Enter your email"
                     required
                   />
+                  <Form.Text className="text-muted">
+                    We will use this email to send status update notifications
+                  </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
@@ -78,7 +111,20 @@ const Login = ({ onLogin }) => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Please enter your password"
+                    placeholder="Enter password (minimum 6 characters)"
+                    required
+                    minLength={6}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Confirm Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Re-enter your password"
                     required
                   />
                 </Form.Group>
@@ -93,10 +139,10 @@ const Login = ({ onLogin }) => {
                     {loading ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Logging in...
+                        Registering...
                       </>
                     ) : (
-                      'Login'
+                      'Register'
                     )}
                   </Button>
                 </div>
@@ -106,9 +152,9 @@ const Login = ({ onLogin }) => {
 
               <div className="text-center">
                 <p className="mb-0">
-                  Don't have an account?{' '}
-                  <Link to="/register" className="text-primary text-decoration-none">
-                    Sign up now
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-primary text-decoration-none">
+                    Login
                   </Link>
                 </p>
               </div>
@@ -120,4 +166,4 @@ const Login = ({ onLogin }) => {
   );
 };
 
-export default Login; 
+export default Register; 

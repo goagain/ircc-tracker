@@ -2,34 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import credentialService from '../services/credentialService';
 import CredentialsList from '../components/CredentialsList';
+import { User } from '../types/user';
 
-const Dashboard = ({ user }) => {
-  const [credentials, setCredentials] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface Credential {
+  id: string;
+  user_id: string;
+  ircc_username: string;
+  email: string;
+  is_active: boolean;
+  last_status: string;
+  last_checked: string;
+  last_timestamp: string;
+  application_number: string;
+}
+
+interface DashboardProps {
+  user: User;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ user }) => {
+  const [credentials, setCredentials] = useState<Credential[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     loadCredentials();
   }, []);
 
-  const loadCredentials = async () => {
+  const loadCredentials = async (): Promise<void> => {
     try {
       setLoading(true);
       const response = await credentialService.getMyCredentials();
-      setCredentials(response.data.credentials);
-    } catch (error) {
+      setCredentials(response.credentials);
+    } catch (error: any) {
       setError('Failed to load credentials: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteCredential = async (irccUsername) => {
+  const handleDeleteCredential = async (irccUsername: string): Promise<void> => {
     if (window.confirm(`Are you sure you want to delete the credential "${irccUsername}"?`)) {
       try {
         await credentialService.deleteCredential(irccUsername);
         await loadCredentials(); // Reload the list
-      } catch (error) {
+      } catch (error: any) {
         setError('Failed to delete credential: ' + (error.response?.data?.error || error.message));
       }
     }

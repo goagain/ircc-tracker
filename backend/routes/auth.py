@@ -7,10 +7,32 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from config import Config
 import logging
+from utils.encryption import encryption_manager
+from utils.jwt_utils import create_token, verify_token
+from functools import wraps
 
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            token = token.split(' ')[1]
+            payload = verify_token(token)
+            if not payload:
+                return jsonify({'error': 'Invalid token'}), 401
+            current_user = User.find_by_email(payload.get('email'))
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except Exception as e:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -68,7 +90,7 @@ def login():
             return jsonify({'error': 'Account has been disabled'}), 401
         
         # Generate JWT token
-        token = generate_token(user)
+        token = create_token(user.email)
         
         logger.info(f"User login successful: {email}")
         
@@ -86,7 +108,7 @@ def login():
         return jsonify({'error': 'Login failed, please try again later'}), 500
 
 @auth_bp.route('/verify-token', methods=['POST'])
-def verify_token():
+def verify_token_route():
     """Verify JWT token"""
     try:
         data = request.get_json()
@@ -95,12 +117,12 @@ def verify_token():
         if not token:
             return jsonify({'error': 'Token cannot be empty'}), 400
         
-        user_data = decode_token(token)
-        if not user_data:
+        payload = verify_token(token)
+        if not payload:
             return jsonify({'error': 'Token is invalid or expired'}), 401
         
         # Check if user still exists and is active
-        user = User.find_by_email(user_data['email'])
+        user = User.find_by_email(payload.get('email'))
         if not user or not user.is_active:
             return jsonify({'error': 'User does not exist or has been disabled'}), 401
         
@@ -117,40 +139,26 @@ def verify_token():
         return jsonify({'error': 'Token verification failed'}), 500
 
 @auth_bp.route('/change-password', methods=['POST'])
-def change_password():
-    """Change password"""
+@token_required
+def change_password(current_user):
+    """Change user password"""
     try:
-        # Get token from request header
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Authentication required'}), 401
-        
-        token = auth_header.split(' ')[1]
-        user_data = decode_token(token)
-        if not user_data:
-            return jsonify({'error': 'Token is invalid or expired'}), 401
-        
         data = request.get_json()
-        if not data or not data.get('old_password') or not data.get('new_password'):
-            return jsonify({'error': 'Old password and new password cannot be empty'}), 400
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
         
-        old_password = data.get('old_password')
-        new_password = data.get('new_password')
-        
-        # Find user
-        user = User.find_by_email(user_data['email'])
-        if not user:
-            return jsonify({'error': 'User does not exist'}), 404
-        
-        # Verify old password
-        if not user.check_password(old_password):
-            return jsonify({'error': 'Old password is incorrect'}), 400
-        
+        if not current_password or not new_password:
+            return jsonify({'error': 'Current password and new password are required'}), 400
+            
+        # Verify current password
+        if not current_user.check_password(current_password):
+            return jsonify({'error': 'Current password is incorrect'}), 401
+            
         # Update password
-        user.password_hash = user._hash_password(new_password)
-        user.save()
+        current_user.password = new_password
+        current_user.save()
         
-        logger.info(f"User password changed successfully: {user.email}")
+        logger.info(f"User password changed successfully: {current_user.email}")
         
         return jsonify({'message': 'Password changed successfully'}), 200
         

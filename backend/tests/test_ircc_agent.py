@@ -23,7 +23,7 @@ class TestCompareApplicationDetails(unittest.TestCase):
                     'order': 2
                 }
             ]
-        }
+        })
         
         self.new_details = ApplicationRecord.from_dict({
             'applicationNumber': 'C000123456',
@@ -42,7 +42,7 @@ class TestCompareApplicationDetails(unittest.TestCase):
                     'order': 2
                 }
             ]
-        }
+        })
 
     def test_no_changes(self):
         """Test no changes"""
@@ -98,7 +98,7 @@ class TestCompareApplicationDetails(unittest.TestCase):
         }
         
         with self.assertRaises(KeyError):
-            compare_application_details(incomplete_details, self.new_details)
+            IRCCChecker.compare_application_details(incomplete_details, self.new_details)
 
     def test_different_application_numbers(self):
         """Test different application numbers"""
@@ -106,7 +106,7 @@ class TestCompareApplicationDetails(unittest.TestCase):
         different_details['applicationNumber'] = 'C000654321'
         
         with self.assertRaises(ValueError):
-            compare_application_details(self.old_details, different_details)
+            IRCCChecker.compare_application_details(self.old_details, different_details)
 
     def test_activity_order_changes(self):
         """Test activity order changes"""

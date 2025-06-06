@@ -20,8 +20,9 @@ export enum HistoryType {
 }
 
 export interface Activity {
-    activity: string;
-    status: 'notStarted' | 'inProgress' | 'completed';
+    order: number;
+    activity: ActivityType;
+    status: ActivityStatus;
 }
 
 export interface BilingualText {
@@ -30,6 +31,10 @@ export interface BilingualText {
 }
 
 export interface HistoryRecord {
+    time: number;
+    is_new: boolean;
+    title: BilingualText;
+    text: BilingualText;
     description: string;
     timestamp: number;
 }
@@ -37,7 +42,7 @@ export interface HistoryRecord {
 export interface ApplicationRecord {
     application_number: string;
     uci: string;
-    status: 'notStarted' | 'inProgress' | 'completed';
+    status: ActivityStatus;
     last_updated_time: number;
     activities: Activity[];
     history: HistoryRecord[];

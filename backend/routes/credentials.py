@@ -165,9 +165,9 @@ def update_credential(credential_id: str):
         logger.error("Update IRCC credentials failed: %s", str(e))
         return jsonify({'error': 'Update failed, please try again later'}), 500
 
-@credentials_bp.route('/delete', methods=['DELETE'])
+@credentials_bp.route('/<ircc_username>', methods=['DELETE'])
 @require_auth
-def delete_credential():
+def delete_credential(ircc_username):
     """Delete IRCC credentials"""
     try:
         data = request.get_json()

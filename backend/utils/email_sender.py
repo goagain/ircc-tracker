@@ -14,16 +14,16 @@ logger = logging.getLogger(__name__)
 
 class EmailSenderBase:
     def send_status_update_email(self, to_email, ircc_username, old_status, new_status, timestamp=None) -> bool:
-        pass
+        return False
     
     def send_error_notification(self, to_email, ircc_username, error_message) -> bool:
-        pass
+        return False
     
     def test_connection(self) -> bool:
-        pass
+        return False
 
     def send_test_email(self) -> bool:
-        pass
+        return False
 
 class FakeEmailSender(EmailSenderBase):
     def send_status_update_email(self, to_email, ircc_username, old_status, new_status, timestamp=None):
@@ -38,6 +38,10 @@ class FakeEmailSender(EmailSenderBase):
         logger.info("Email server connection test successful")
         return True
 
+    def send_test_email(self) -> bool:
+        logger.info("Test email sent")
+        return True
+    
 class EmailSender(EmailSenderBase):
     def __init__(self):
         self.smtp_server = Config.SMTP_SERVER
