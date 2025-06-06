@@ -1,6 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 from flask import Blueprint, request, jsonify
+from config import Config
 from utils.ircc_agent import IRCCAgentFactory
 from models.ircc_credential import IRCCCredential
 from models.user import User
@@ -42,30 +43,23 @@ def upload_credential():
         if not ircc_agent.verify_ircc_credentials(current_user_email, ircc_username, ircc_password):
             return jsonify({'error': 'Invalid IRCC credentials'}), 400
         
-        application_summary = ircc_agent.get_application_summary(IRCCCredential(
+        salt = encryption_manager.generate_salt()
+        encrypted_password = encryption_manager.encrypt(salt, ircc_password)
+        
+        credential = IRCCCredential(
             user_id=current_user_email,
             ircc_username=ircc_username,
-            encrypted_password=encryption_manager.encrypt(ircc_password),
+            salt=salt,
+            encrypted_password=encrypted_password,
             application_type=application_type,
             email=notification_email
-        ))
+        )
+        application_summary = ircc_agent.get_application_summary(credential)
         if not application_summary:
             return jsonify({'error': 'Failed to get application summary'}), 500
         
         application_number = application_summary.get('apps', [{}])[0].get('appNumber')
-        
-        # Encrypt password
-        encrypted_password = encryption_manager.encrypt(ircc_password)
-        
-        # Create or update credentials
-        credential = IRCCCredential(
-            user_id=current_user_email,  # Use email as user ID
-            ircc_username=ircc_username,
-            encrypted_password=encrypted_password,
-            application_type=application_type,
-            email=notification_email,
-            application_number=application_number
-        )
+        credential.application_number = application_number
         
         credential_id = credential.save()
         
@@ -78,6 +72,8 @@ def upload_credential():
         
     except Exception as e:
         logger.error("Upload IRCC credentials failed: %s", str(e))
+        if Config.DEBUG:
+            raise e
         return jsonify({'error': 'Upload failed, please try again later'}), 500
 
 @credentials_bp.route('/my-credentials', methods=['GET'])
@@ -135,7 +131,7 @@ def update_credential(credential_id: str):
         data = request.get_json()
         
         credential_id = ObjectId(credential_id)
-        ircc_password = data.get('ircc_password')
+        ircc_password: str | None = data.get('ircc_password')
         notification_email = data.get('notification_email')
         
         # Find existing credentials
@@ -149,7 +145,9 @@ def update_credential(credential_id: str):
         
         # Update credential information
         if ircc_password:
-            credential.encrypted_password = encryption_manager.encrypt(ircc_password)
+            salt = encryption_manager.generate_salt()
+            credential.salt = salt
+            credential.encrypted_password = encryption_manager.encrypt(salt, ircc_password)
             if not IRCCAgentFactory.get_ircc_agent(credential.application_type).verify_ircc_credentials(request.current_user['email'], credential.ircc_username, ircc_password):
                 return jsonify({'error': 'Invalid IRCC credentials'}), 400
         
@@ -250,11 +248,12 @@ def test_encryption():
         
         test_text = data.get('test_text')
         
+        salt = encryption_manager.generate_salt()
         # Encrypt
-        encrypted = encryption_manager.encrypt(test_text)
+        encrypted = encryption_manager.encrypt(salt, test_text)
         
         # Decrypt
-        decrypted = encryption_manager.decrypt(encrypted)
+        decrypted = encryption_manager.decrypt(salt, encrypted)
         
         return jsonify({
             'original': test_text,

@@ -1,6 +1,6 @@
 """Main Flask application module for the IRCC Tracker API server."""
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, redirect, send_from_directory
 from flask_cors import CORS
 from models.database import db_instance
 from models.user import User

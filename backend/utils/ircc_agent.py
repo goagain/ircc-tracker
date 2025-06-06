@@ -99,11 +99,12 @@ class IRCCAgent:
         """Decorator to handle token management"""
         @wraps(func)
         def wrapper(self, credential: IRCCCredential, *args, **kwargs):
+            salt = credential.salt
             # Get token
             token = self._get_token(
                 credential.user_id,
                 credential.ircc_username,
-                encryption_manager.decrypt(credential.encrypted_password)
+                encryption_manager.decrypt(salt, credential.encrypted_password)
             )
             
             if not token:
@@ -115,11 +116,12 @@ class IRCCAgent:
 
     def verify_ircc_credentials(self, user_id: str, ircc_username: str, ircc_password: str) -> bool:
         """Verify IRCC credentials"""
-        del self.token_cache[(user_id, ircc_username)]
+        if (user_id, ircc_username) in self.token_cache:
+            del self.token_cache[(user_id, ircc_username)]
         token = self._get_token(user_id, ircc_username, ircc_password)
         if not token:
             return False
-            
+        
         return True
 
     @with_token

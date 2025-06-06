@@ -6,10 +6,11 @@ from bson import ObjectId
 from models.database import db_instance
 
 class IRCCCredential:
-    def __init__(self, user_id: str, ircc_username: str, encrypted_password: str, application_type: str, email=None, application_number=None):
+    def __init__(self, user_id: str, ircc_username: str, salt: str, encrypted_password: str, application_type: str, email=None, application_number=None):
         self.id: ObjectId | None = None
         self.user_id = user_id
         self.ircc_username = ircc_username
+        self.salt = salt
         self.encrypted_password = encrypted_password  # AES encrypted password
         self.email = email  # Email for receiving notifications
         self.is_active = True
@@ -20,13 +21,13 @@ class IRCCCredential:
         self.last_timestamp = None
         self.application_type = application_type
         self.application_number: str | None = application_number
-        
     def to_dict(self):
         """Convert to dictionary format"""
         return {
             'id': str(self.id),
             'user_id': self.user_id,
             'ircc_username': self.ircc_username,
+            'salt': self.salt,
             'encrypted_password': self.encrypted_password,
             'email': self.email,
             'is_active': self.is_active,
@@ -46,6 +47,7 @@ class IRCCCredential:
         credential.id = ObjectId(data.get('_id'))
         credential.user_id = data.get('user_id')
         credential.ircc_username = data.get('ircc_username')
+        credential.salt = data.get('salt')
         credential.encrypted_password = data.get('encrypted_password')
         credential.email = data.get('email')
         credential.is_active = data.get('is_active', True)

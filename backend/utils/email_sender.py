@@ -207,9 +207,10 @@ IRCC Tracker - Keep you informed about your application progress
             logger.error("Email server connection test failed: %s", str(e))
             return False
 
-    def send_test_email(self):
+    def send_test_email(self) -> bool:
         """Send a test email"""
         return self.send_status_update_email(self.admin_email, "test application", "test application number", ["test change"], datetime.now())
+        
 # Global email sender instance
 if Config.SMTP_SERVER:
     email_sender = EmailSender()
