@@ -249,25 +249,25 @@ const CredentialForm = ({ user }) => {
                   <hr className="my-4" />
 
                   <div className="text-center">
-                    <h6 className="text-muted mb-3">工作原理</h6>
+                    <h6 className="text-muted mb-3">How it works</h6>
                     <Row className="g-3">
                       <Col md={4} className="text-center">
                         <div className="text-primary mb-2">
                           <i className="bi bi-shield-lock" style={{ fontSize: '2rem' }}></i>
                         </div>
-                        <small className="text-muted">安全加密存储</small>
+                        <small className="text-muted">Secure AES-256 Encryption</small>
                       </Col>
                       <Col md={4} className="text-center">
                         <div className="text-primary mb-2">
                           <i className="bi bi-arrow-repeat" style={{ fontSize: '2rem' }}></i>
                         </div>
-                        <small className="text-muted">每10分钟检查</small>
+                        <small className="text-muted">Check every 10 minutes</small>
                       </Col>
                       <Col md={4} className="text-center">
                         <div className="text-primary mb-2">
                           <i className="bi bi-bell" style={{ fontSize: '2rem' }}></i>
                         </div>
-                        <small className="text-muted">状态变更通知</small>
+                        <small className="text-muted">Status change notifications</small>
                       </Col>
                     </Row>
                   </div>
