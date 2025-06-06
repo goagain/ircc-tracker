@@ -180,14 +180,14 @@ const CredentialForm: React.FC<CredentialFormProps> = ({ user }) => {
                     name="ircc_password"
                     value={formData.ircc_password}
                     onChange={handleChange}
-                    placeholder={credentialId ? "Leave blank to keep current password" : "Enter your IRCC password"}
+                    placeholder={credentialId ? "Leave blank to keep current password" : "Enter your IRCC Tracker password"}
                     required={!credentialId}
                     disabled={loading}
                   />
                   <Form.Text className="text-muted">
                     {credentialId 
                       ? "Leave blank if you don't want to change the password"
-                      : "This is the password you use to log in to your IRCC account"
+                      : "This is the password you use to log in to your IRCC Tracker account"
                     }
                   </Form.Text>
                 </Form.Group>
