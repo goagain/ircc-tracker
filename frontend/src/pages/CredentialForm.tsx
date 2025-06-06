@@ -164,12 +164,12 @@ const CredentialForm: React.FC<CredentialFormProps> = ({ user }) => {
                     name="ircc_username"
                     value={formData.ircc_username}
                     onChange={handleChange}
-                    placeholder="Enter your IRCC username"
+                    placeholder="Enter your IRCC tracker username"
                     required
                     disabled={loading || !!credentialId}
                   />
                   <Form.Text className="text-muted">
-                    This is the username you use to log in to your IRCC account
+                    This is the username you use to log in to your IRCC Tracker account
                   </Form.Text>
                 </Form.Group>
 
