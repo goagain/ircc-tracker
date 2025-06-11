@@ -70,7 +70,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-        <CredentialsList credentials={credentials} onDelete={() => {}} />
       </Container>
     );
   }
@@ -204,6 +203,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           </Row>
         </>
       )}
+
+      <Row className="mt-4">
+        <Col>
+          <CredentialsList
+            credentials={credentials}
+            onDelete={async (id) => {
+              try {
+                await credentialService.deleteCredential(id);
+                await loadStats();
+              } catch (error: any) {
+                setError(error.response?.data?.error || 'Failed to delete credential');
+              }
+            }}
+          />
+        </Col>
+      </Row>
     </Container>
   );
 };
