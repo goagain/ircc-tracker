@@ -90,7 +90,7 @@ def login():
             return jsonify({'error': 'Account has been disabled'}), 401
         
         # Generate JWT token
-        token = create_token(user.email)
+        token = create_token(user.email, user.role)
         
         logger.info(f"User login successful: {email}")
         

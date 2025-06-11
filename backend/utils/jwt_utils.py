@@ -7,10 +7,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def create_token(email: str) -> str:
+def create_token(email: str, role: str) -> str:
     """Create JWT token"""
     payload = {
         'email': email,
+        'role': role,
         'exp': datetime.now(timezone.utc) + timedelta(hours=Config.JWT_EXPIRATION_HOURS),
         'iat': datetime.now(timezone.utc)
     }

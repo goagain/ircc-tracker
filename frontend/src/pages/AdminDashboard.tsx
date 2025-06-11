@@ -44,10 +44,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       setStats(response.data);
     } catch (error: any) {
       if (error.response?.status === 403) {
-        setError('您没有权限访问管理员仪表盘');
+        setError('You do not have permission to access the admin dashboard');
         navigate('/dashboard');
       } else {
-        setError(error.response?.data?.error || '加载管理员统计数据失败');
+        setError(error.response?.data?.error || 'Failed to load admin statistics');
       }
     } finally {
       setLoading(false);
@@ -76,15 +76,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         <Col>
           <h1 className="display-6">
             <span className="canada-flag">🍁</span>
-            管理员仪表盘
+            Admin Dashboard
           </h1>
           <p className="lead text-muted">
-            欢迎，{user.email}！管理您的应用程序。
+            Welcome, {user.email}! Manage your application.
           </p>
         </Col>
         <Col xs="auto">
           <Button variant="primary" onClick={handleRefresh}>
-            刷新统计
+            Refresh Statistics
           </Button>
         </Col>
       </Row>
@@ -102,12 +102,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <Card className="text-center h-100">
                 <Card.Body>
                   <div className="display-4 text-primary mb-3">👥</div>
-                  <Card.Title>总用户数</Card.Title>
+                  <Card.Title>Total Users</Card.Title>
                   <Card.Text className="display-6 text-primary">
                     {stats.users.total}
                   </Card.Text>
                   <Card.Text className="text-muted">
-                    {stats.users.active} 活跃用户
+                    {stats.users.active} Active Users
                   </Card.Text>
                 </Card.Body>
               </Card>
@@ -116,7 +116,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <Card className="text-center h-100">
                 <Card.Body>
                   <div className="display-4 text-success mb-3">🔑</div>
-                  <Card.Title>总凭证数</Card.Title>
+                  <Card.Title>Total Credentials</Card.Title>
                   <Card.Text className="display-6 text-success">
                     {stats.credentials.total}
                   </Card.Text>
@@ -134,12 +134,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <Card className="text-center h-100">
                 <Card.Body>
                   <div className="display-4 text-info mb-3">🔄</div>
-                  <Card.Title>系统状态</Card.Title>
+                  <Card.Title>System Status</Card.Title>
                   <Card.Text className="text-info">
                     {stats.system_status}
                   </Card.Text>
                   <Card.Text className="text-muted">
-                    调度器: {stats.scheduler.status}
+                    Scheduler: {stats.scheduler.status}
                   </Card.Text>
                 </Card.Body>
               </Card>
@@ -150,45 +150,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <Col>
               <Card>
                 <Card.Header>
-                  <h5 className="mb-0">系统统计</h5>
+                  <h5 className="mb-0">System Statistics</h5>
                 </Card.Header>
                 <Card.Body>
                   <Table responsive>
                     <thead>
                       <tr>
-                        <th>指标</th>
-                        <th>数值</th>
+                        <th>Metric</th>
+                        <th>Value</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td>总用户数</td>
+                        <td>Total Users</td>
                         <td>{stats.users.total}</td>
                       </tr>
                       <tr>
-                        <td>活跃用户</td>
+                        <td>Active Users</td>
                         <td>{stats.users.active}</td>
                       </tr>
                       <tr>
-                        <td>非活跃用户</td>
+                        <td>Inactive Users</td>
                         <td>{stats.users.inactive}</td>
                       </tr>
                       <tr>
-                        <td>总凭证数</td>
+                        <td>Total Credentials</td>
                         <td>{stats.credentials.total}</td>
                       </tr>
                       {Object.entries(stats.credentials.status_distribution).map(([status, count]) => (
                         <tr key={status}>
-                          <td>{status} 状态</td>
+                          <td>{status} Status</td>
                           <td>{count}</td>
                         </tr>
                       ))}
                       <tr>
-                        <td>系统状态</td>
+                        <td>System Status</td>
                         <td>{stats.system_status}</td>
                       </tr>
                       <tr>
-                        <td>调度器状态</td>
+                        <td>Scheduler Status</td>
                         <td>{stats.scheduler.status}</td>
                       </tr>
                     </tbody>
