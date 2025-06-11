@@ -15,17 +15,21 @@ class User:
         self.created_at = datetime.now(timezone.utc)
         self.updated_at = datetime.now(timezone.utc)
     
-    def _hash_password(self, password):
+    def _hash_password(self, password: str) -> str | None:
         """Hash password"""
         if password:
             return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         return None
     
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         """Verify password"""
         if self.password_hash:
             return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
         return False
+    
+    def set_password(self, password: str) -> None:
+        """Set password"""
+        self.password_hash = self._hash_password(password)
     
     def to_dict(self):
         """Convert to dictionary format"""

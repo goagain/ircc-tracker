@@ -140,7 +140,7 @@ def verify_token_route():
 
 @auth_bp.route('/change-password', methods=['POST'])
 @token_required
-def change_password(current_user):
+def change_password(current_user: User):
     """Change user password"""
     try:
         data = request.get_json()
@@ -155,7 +155,7 @@ def change_password(current_user):
             return jsonify({'error': 'Current password is incorrect'}), 401
             
         # Update password
-        current_user.password = new_password
+        current_user.set_password(new_password)
         current_user.save()
         
         logger.info(f"User password changed successfully: {current_user.email}")
