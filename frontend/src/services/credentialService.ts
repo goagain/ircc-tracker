@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { AxiosResponse } from 'axios';
+import api from './api';
 
 export interface Credential {
   id: string;
@@ -26,60 +27,33 @@ export interface CreateCredentialData {
   application_type: string;
 }
 
-interface ApiResponse<T> {
-  data: T;
-  message: string;
-}
-
-const API_BASE_URL = '/api';
-
 class CredentialService {
-  private getAuthHeader() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async getMyCredentials(): Promise<CredentialResponse> {
-    const response = await axios.get(`${API_BASE_URL}/credentials/my-credentials`, {
-      headers: this.getAuthHeader()
-    });
+    const response = await api.get<CredentialResponse>('/credentials/my-credentials');
     return response.data;
   }
 
   async getCredential(credentialId: string): Promise<Credential> {
-    const response = await axios.get(`${API_BASE_URL}/credentials/${credentialId}`, {
-      headers: this.getAuthHeader()
-    });
+    const response = await api.get<Credential>(`/credentials/${credentialId}`);
     return response.data;
   }
 
-  async addCredential(irccUsername: string, email: string): Promise<Credential> {
-    const response = await axios.post(
-      `${API_BASE_URL}/credentials`,
-      { ircc_username: irccUsername, email },
-      { headers: this.getAuthHeader() }
-    );
+  async getAllCredentials(): Promise<CredentialResponse> {
+    const response = await api.get<CredentialResponse>('/credentials/all');
     return response.data;
   }
 
   async deleteCredential(irccUsername: string): Promise<void> {
-    const response = await axios.delete(`${API_BASE_URL}/credentials/${irccUsername}`, {
-      headers: this.getAuthHeader()
-    });
-    return response.data;
+    await api.delete(`/credentials/${irccUsername}`);
   }
 
   async updateCredential(credentialId: string, data: Partial<Credential>): Promise<Credential> {
-    const response = await axios.put(
-      `${API_BASE_URL}/credentials/${credentialId}`,
-      data,
-      { headers: this.getAuthHeader() }
-    );
+    const response = await api.put<Credential>(`/credentials/${credentialId}`, data);
     return response.data;
   }
 
   async createCredential(data: CreateCredentialData): Promise<Credential> {
-    const response = await axios.post('/api/credentials', data);
+    const response = await api.post<Credential>('/credentials/', data);
     return response.data;
   }
 }

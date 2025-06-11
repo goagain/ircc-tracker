@@ -191,7 +191,6 @@ def decode_token(token):
 
 def require_auth(f):
     """Authentication decorator"""
-    from functools import wraps
     
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -212,7 +211,6 @@ def require_auth(f):
 
 def require_admin(f):
     """Admin permission decorator"""
-    from functools import wraps
     
     @wraps(f)
     @require_auth

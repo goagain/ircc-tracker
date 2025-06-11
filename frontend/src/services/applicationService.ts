@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { Activity, ActivityStatus } from '../types/application';
+import tokenService from './tokenService';
 
 const API_BASE_URL = '/api';
 
@@ -48,8 +49,9 @@ class ApplicationService {
     // Request interceptor - automatically add token
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        const token = tokenService.getToken();
         if (token) {
+          config.headers = config.headers || {};
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -64,7 +66,7 @@ class ApplicationService {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          localStorage.removeItem('token');
+          tokenService.removeToken();
           window.location.href = '/login';
         }
         return Promise.reject(error);

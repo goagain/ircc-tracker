@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Alert, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import credentialService from '../services/credentialService';
+import credentialService, { Credential } from '../services/credentialService';
 import { User } from '../types/user';
+import CredentialsList from '../components/CredentialsList';
 
 interface AdminDashboardProps {
   user: User;
@@ -29,6 +30,7 @@ interface AdminStats {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [credentials, setCredentials] = useState<Credential[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const navigate = useNavigate();
@@ -42,6 +44,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       setLoading(true);
       const response = await authService.getAdminStats();
       setStats(response.data);
+      const credentialsResponse = await credentialService.getAllCredentials();
+      setCredentials(credentialsResponse.credentials);
     } catch (error: any) {
       if (error.response?.status === 403) {
         setError('You do not have permission to access the admin dashboard');
@@ -66,6 +70,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
+        <CredentialsList credentials={credentials} onDelete={() => {}} />
       </Container>
     );
   }

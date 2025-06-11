@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import CredentialForm from './pages/CredentialForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import authService from './services/authService';
+import tokenService from './services/tokenService';
 import { User } from './types/user';
 
 const theme = createTheme({
@@ -33,20 +34,20 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check token stored locally
-    const token = localStorage.getItem('token');
+    // Check token stored in cookie
+    const token = tokenService.getToken();
     if (token) {
       authService.verifyToken(token)
         .then(response => {
           if (response.data.valid && response.data.user) {
             setUser(response.data.user);
           } else {
-            localStorage.removeItem('token');
+            tokenService.removeToken();
           }
         })
         .catch(error => {
           console.error('Token verification failed:', error);
-          localStorage.removeItem('token');
+          tokenService.removeToken();
         })
         .finally(() => {
           setLoading(false);
@@ -58,12 +59,12 @@ const App: React.FC = () => {
 
   const handleLogin = (userData: User, token: string): void => {
     setUser(userData);
-    localStorage.setItem('token', token);
+    tokenService.setToken(token);
   };
 
   const handleLogout = (): void => {
     setUser(null);
-    localStorage.removeItem('token');
+    tokenService.removeToken();
   };
 
   if (loading) {

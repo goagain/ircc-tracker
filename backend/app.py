@@ -37,14 +37,21 @@ def create_app():
     app.config['SECRET_KEY'] = Config.SECRET_KEY
     app.config['DEBUG'] = Config.DEBUG
     
-    # Enable CORS
-    CORS(app, origins=["http://localhost:3000"])  # React frontend default port
+    # Enable CORS with specific configuration
+    if Config.DEBUG:
+        CORS(app, 
+            origins=["http://localhost:3000"],  # React frontend default port
+            allow_headers=["Content-Type", "Authorization"],  # Allow Authorization header
+            expose_headers=["Authorization"],  # Allow frontend to access Authorization header
+            supports_credentials=True)  # Allow credentials
         
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(credentials_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(application_bp)
+    
+    app.url_map.strict_slashes = False
     
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

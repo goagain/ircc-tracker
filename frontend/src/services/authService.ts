@@ -1,7 +1,7 @@
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { User, UserRole } from '../types/user';
-
-const API_BASE_URL = '/api';
+import tokenService from './tokenService';
+import api from './api';
 
 interface LoginResponse {
   token: string;
@@ -25,21 +25,21 @@ interface ApiResponse<T> {
 }
 
 class AuthService {
-  private getAuthHeader() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await axios.post<LoginResponse>(`${API_BASE_URL}/auth/login`, {
+    const response = await api.post<LoginResponse>('/auth/login', {
       email,
       password
     });
+    
+    if (response.data.token) {
+      tokenService.setToken(response.data.token);
+    }
+    
     return response.data;
   }
 
   async register(email: string, password: string): Promise<RegisterResponse> {
-    const response = await axios.post<RegisterResponse>(`${API_BASE_URL}/auth/register`, {
+    const response = await api.post<RegisterResponse>('/auth/register', {
       email,
       password
     });
@@ -47,30 +47,24 @@ class AuthService {
   }
 
   async verifyToken(token: string): Promise<AxiosResponse<VerifyTokenResponse>> {
-    return axios.post('/api/auth/verify-token', { token });
+    return api.post<VerifyTokenResponse>('/auth/verify-token', { token });
   }
 
   async getAdminStats(): Promise<AxiosResponse<any>> {
-    return axios.get('/api/admin/dashboard', {
-      headers: this.getAuthHeader()
-    });
+    return api.get('/admin/dashboard');
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
-    const response = await axios.post<{ message: string }>(
-      `${API_BASE_URL}/auth/change-password`,
-      {
-        currentPassword,
-        newPassword
-      },
-      { headers: this.getAuthHeader() }
-    );
+    const response = await api.post<{ message: string }>('/auth/change-password', {
+      currentPassword,
+      newPassword
+    });
     return response.data;
   }
 
   // Get current user information
   getCurrentUser(): User | null {
-    const token = localStorage.getItem('token');
+    const token = tokenService.getToken();
     if (token) {
       try {
         // Simple JWT token parsing (for getting basic info only, no signature verification)
@@ -86,7 +80,7 @@ class AuthService {
 
   // Check if user is logged in
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
+    const token = tokenService.getToken();
     if (!token) return false;
 
     try {
@@ -106,7 +100,7 @@ class AuthService {
 
   // Logout
   logout(): void {
-    localStorage.removeItem('token');
+    tokenService.removeToken();
   }
 }
 
