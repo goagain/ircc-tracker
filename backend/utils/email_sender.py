@@ -136,9 +136,21 @@ Please check your IRCC account information or contact the system administrator.
         <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #2c5aa0; border-bottom: 2px solid #2c5aa0; padding-bottom: 10px;">
-                        🇨🇦 IRCC Status Update Notification
-                    </h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="color: #2c5aa0; border-bottom: 2px solid #2c5aa0; padding-bottom: 10px; margin: 0;">
+                            🇨🇦 Goagain's IRCC Status Update Notification
+                        </h2>
+                        <div style="text-align: right;">
+                            <a href="https://github.com/goagain/ircc-tracker" style="text-decoration: none; color: #2c5aa0;">
+                                <span style="display: inline-flex; align-items: center; background: #f8f9fa; padding: 5px 10px; border-radius: 4px;">
+                                    <svg style="width: 16px; height: 16px; margin-right: 5px;" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                                    </svg>
+                                    Star on GitHub
+                                </span>
+                            </a>
+                        </div>
+                    </div>
                     
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
                         <h3 style="margin-top: 0; color: #495057;">Account Information</h3>
@@ -149,7 +161,7 @@ Please check your IRCC account information or contact the system administrator.
                     
                     <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
                         <h3 style="margin-top: 0; color: #856404;">Status Change</h3>
-                        {changes}
+                        {changes.replace('\n', '<br>')}
                     </div>
                     
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
@@ -158,7 +170,10 @@ Please check your IRCC account information or contact the system administrator.
                             If you have any questions, please contact the system administrator.
                         </p>
                         <p style="font-size: 0.9em; color: #6c757d;">
-                            <strong>IRCC Tracker</strong> - Keep you informed about your application progress
+                            <strong>Goagain's IRCC Tracker</strong> - Keep you informed about your application progress
+                        </p>
+                        <p style="font-size: 0.9em; color: #6c757d;">
+                            Visit our website: <a href="https://tracker.goagain.me" style="color: #2c5aa0; text-decoration: none;">https://tracker.goagain.me</a>
                         </p>
                     </div>
                 </div>
@@ -184,7 +199,9 @@ Status Change:
 This is an automatically generated email, please do not reply.
 If you have any questions, please contact the system administrator.
 
-IRCC Tracker - Keep you informed about your application progress
+Goagain's IRCC Tracker - Keep you informed about your application progress
+Visit our website: https://tracker.goagain.me
+Star us on GitHub: https://github.com/goagain/ircc-tracker
         """
     
     def _send_email(self, message, to_email):

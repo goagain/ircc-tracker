@@ -176,12 +176,12 @@ const Footer: React.FC = () => (
     <Container>
       <div className="row">
         <div className="col-md-6">
-          <h5>IRCC Tracker</h5>
+          <h5>Goagain's IRCC Tracker</h5>
           <p className="mb-0">Keep you informed about your Canadian immigration application progress</p>
         </div>
         <div className="col-md-6 text-md-end">
           <p className="mb-0">
-            © 2024 IRCC Tracker. All rights reserved.
+            © 2024 Goagain's IRCC Tracker. All rights reserved.
           </p>
         </div>
       </div>
