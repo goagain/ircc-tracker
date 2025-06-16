@@ -32,16 +32,16 @@ class MongoDBIndexManager:
             ],
             'application_records': [
                 {
-                    'name': 'application_number_last_updated_time',
+                    'name': 'applicationNumber_lastUpdatedTime',
                     'keys': [
-                        ('application_number', ASCENDING),
+                        ('applicationNumber', ASCENDING),
                         ('lastUpdatedTime', DESCENDING)
                     ],
                     'unique': True
                 },
                 {
-                    'name': 'application_number',
-                    'keys': [('application_number', ASCENDING)]
+                    'name': 'applicationNumber',
+                    'keys': [('applicationNumber', ASCENDING)]
                 },
                 {
                     'name': 'last_updated_time',
