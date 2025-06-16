@@ -128,7 +128,6 @@ class IRCCChecker:
                     success_count += 1
             except Exception as e:
                 logger.error(f"Exception occurred while checking credential: {str(e)}")
-                logger.error(e.with_traceback())
         logger.info(f"Status check completed: {success_count}/{total_count} successful")
         return success_count, total_count
     

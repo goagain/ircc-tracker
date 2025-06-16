@@ -25,8 +25,8 @@ class BilingualText:
 @dataclass
 class HistoryRecord:
     time: int
-    is_new: bool
-    is_waiting: bool
+    is_new: Optional[bool]
+    is_waiting: Optional[bool]
     type: str
     activity: str
     load_time: int
@@ -69,14 +69,14 @@ class ApplicationRecord:
 
         history = [
             HistoryRecord(
-                time=record["time"],
-                is_new=record["isNew"],
-                is_waiting=record["isWaiting"],
-                type=record["type"],
-                activity=record["activity"],
-                load_time=record["loadTime"],
-                title=BilingualText(**record["title"]),
-                text=BilingualText(**record["text"])
+                time=record.get("time"),
+                is_new=record.get("isNew"),
+                is_waiting=record.get("isWaiting"),
+                type=record.get("type"),
+                activity=record.get("activity"),
+                load_time=record.get("loadTime"),
+                title=BilingualText(**record.get("title")),
+                text=BilingualText(**record.get("text"))
             )
             for record in data.get("history", [])
         ]
