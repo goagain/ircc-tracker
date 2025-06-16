@@ -53,8 +53,8 @@ class IRCCChecker:
             changes.append(ApplicationRecordChange("Application Status", "Changed", current_application_details.status, new_application_details.status))
         if current_application_details.last_updated_time != new_application_details.last_updated_time:
             changes.append(ApplicationRecordChange("Last Updated Time", "Changed", current_application_details.last_updated_time, new_application_details.last_updated_time))
-        current_activities = {activity.activity: activity for activity in new_application_details.activities}
-        new_activities = {activity.activity: activity for activity in current_application_details.activities}
+        current_activities = {activity.activity: activity for activity in current_application_details.activities}
+        new_activities = {activity.activity: activity for activity in new_application_details.activities}
         for activity in new_activities:
             if activity not in current_activities:
                 changes.append(ApplicationRecordChange(activity, "Added", "N/A", new_activities[activity].status))
@@ -67,7 +67,7 @@ class IRCCChecker:
         len_history = len(history)
         
         for i in range(len_history, len(new_history)):
-            changes.append(ApplicationRecordChange("Event", "Added", new_history[i].title, new_history[i].title))
+            changes.append(ApplicationRecordChange("Event", "Added", "N/A", new_history[i].title))
         return changes
     
     def check_single_credential(self, credential: IRCCCredential) -> bool:
@@ -80,8 +80,8 @@ class IRCCChecker:
                 # get current status and timestamp
                 current_status = application_details.get('status')
                 current_timestamp = application_details.get('lastUpdatedTime')
-                # if not self._status_changed(credential, current_status, current_timestamp):
-                #     return False
+                if not self._status_changed(credential, current_status, current_timestamp):
+                    return False
                 last_application_details = ApplicationRecord.get_latest_record(credential.application_number)
                 
                 application_record = ApplicationRecord.from_dict(application_details)
