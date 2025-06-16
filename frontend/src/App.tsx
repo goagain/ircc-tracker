@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import authService from './services/authService';
 import tokenService from './services/tokenService';
 import { User } from './types/user';
+import GoogleAnalytics from './components/GoogleAnalytics';
 
 const theme = createTheme({
   palette: {
@@ -82,6 +83,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <AuthProvider>
         <Router>
+          <GoogleAnalytics />
           <div className="App d-flex flex-column min-vh-100">
             <Navbar user={user} onLogout={handleLogout} />
             <main className="flex-grow-1">

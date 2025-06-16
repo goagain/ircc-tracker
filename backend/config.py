@@ -38,6 +38,9 @@ class Config:
     IRCC_CITIZEN_CHECK_URL = os.getenv('IRCC_CITIZEN_CHECK_URL', 'https://tracker-suivi.apps.cic.gc.ca/en/login')
     IRCC_IMMIGRANT_CHECK_URL = os.getenv('IRCC_IMMIGRANT_CHECK_URL', 'https://ircc-tracker-suivi.apps.cic.gc.ca/en/login')
 
+    # Google Analytics
+    GOOGLE_ANALYTICS_ID = os.getenv('GOOGLE_ANALYTICS_ID')
+
 # Example configuration file - copy as config.py and modify actual values
 EXAMPLE_ENV = """
 # MongoDB configuration

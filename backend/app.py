@@ -8,6 +8,7 @@ from routes.auth import auth_bp
 from routes.credentials import credentials_bp
 from routes.application import application_bp
 from routes.admin import admin_bp
+from routes.config_routes import config_bp
 from services.scheduler import task_scheduler
 from config import Config
 import logging
@@ -50,7 +51,7 @@ def create_app():
     app.register_blueprint(credentials_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(application_bp)
-    
+    app.register_blueprint(config_bp)
     app.url_map.strict_slashes = False
     
     # Health check endpoint

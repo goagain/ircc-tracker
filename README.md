@@ -91,6 +91,9 @@ JWT_EXPIRATION_HOURS=24                 # JWT token expiration time
 ADMIN_EMAIL=admin@example.com           # Admin user email
 ADMIN_PASSWORD=secure-password          # Admin user password
 
+# Google Analytics Configuration
+GOOGLE_ANALYTICS_ID=G-F1T3XXXXX         # Optional. Google Analytics tracking ID
+
 # IRCC URLs
 IRCC_CITIZEN_CHECK_URL=https://tracker-suivi.apps.cic.gc.ca/en/login
 IRCC_IMMIGRANT_CHECK_URL=https://ircc-tracker-suivi.apps.cic.gc.ca/en/login
