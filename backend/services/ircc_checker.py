@@ -81,7 +81,7 @@ class IRCCChecker:
                 current_status = application_details.get('status')
                 current_timestamp = application_details.get('lastUpdatedTime')
                 if not self._status_changed(credential, current_status, current_timestamp):
-                    return False
+                    return True
                 last_application_details = ApplicationRecord.get_latest_record(credential.application_number)
                 
                 application_record = ApplicationRecord.from_dict(application_details)

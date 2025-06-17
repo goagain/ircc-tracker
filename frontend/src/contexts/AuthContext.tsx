@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   login: (token: string, user: User) => void;
   logout: () => void;
+  hasGoogleAuth: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,17 +48,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenService.removeToken();
   };
 
+  const authContextValue = { 
+    token, 
+    user, 
+    login, 
+    logout,
+    hasGoogleAuth: !!googleClientId 
+  };
+
+  // if Google Client ID, only render the normal interface
   if (!googleClientId) {
     return (
-      <AuthContext.Provider value={{ token, user, login, logout }}>
+      <AuthContext.Provider value={authContextValue}>
         {children}
       </AuthContext.Provider>
     );
   }
 
+  // if Google Client ID, render the interface with Google OAuth
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
-      <AuthContext.Provider value={{ token, user, login, logout }}>
+      <AuthContext.Provider value={authContextValue}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>

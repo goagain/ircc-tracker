@@ -3,6 +3,8 @@ import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import { User } from '../types/user';
+import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginProps {
   onLogin: (user: User, token: string) => void;
@@ -14,6 +16,7 @@ interface FormData {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const { hasGoogleAuth } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -46,6 +49,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      const response = await authService.loginWithGoogle(credentialResponse.credential);
+      if (response.token && response.user) {
+        onLogin(response.user, response.token);
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Google login failed, please try again later');
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google login failed, please try again later');
   };
 
   return (
@@ -93,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   />
                 </Form.Group>
 
-                <div className="d-grid">
+                <div className="d-grid gap-2">
                   <Button
                     variant="primary"
                     type="submit"
@@ -111,6 +130,26 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   </Button>
                 </div>
               </Form>
+
+              {hasGoogleAuth && (
+                <>
+                  <div className="text-center my-3">
+                    <span className="text-muted">- OR -</span>
+                  </div>
+
+                  <div className="d-grid">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      useOneTap
+                      theme="filled_blue"
+                      text="signin_with"
+                      shape="rectangular"
+                      width="100%"
+                    />
+                  </div>
+                </>
+              )}
 
               <hr className="my-4" />
 

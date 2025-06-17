@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 config_bp = Blueprint('config', __name__, url_prefix='/api/config')
 
-@config_bp.route('/', methods=['GET'])
+@config_bp.route('', methods=['GET'])
 def get_config():
     """Get all configuration settings."""
     response = make_response(jsonify({

@@ -11,6 +11,8 @@ interface LoginResponse {
 
 interface RegisterResponse {
   message: string;
+  user: User;
+  token: string;
 }
 
 interface VerifyTokenResponse {
@@ -21,6 +23,12 @@ interface VerifyTokenResponse {
 
 interface ApiResponse<T> {
   data: T;
+  message: string;
+}
+
+interface GoogleLoginResponse {
+  token: string;
+  user: User;
   message: string;
 }
 
@@ -101,6 +109,18 @@ class AuthService {
   // Logout
   logout(): void {
     tokenService.removeToken();
+  }
+
+  async loginWithGoogle(credential: string): Promise<GoogleLoginResponse> {
+    const response = await api.post<GoogleLoginResponse>('/auth/google/callback', {
+      credential
+    });
+    
+    if (response.data.token) {
+      tokenService.setToken(response.data.token);
+    }
+    
+    return response.data;
   }
 }
 

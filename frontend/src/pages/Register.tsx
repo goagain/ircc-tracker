@@ -2,14 +2,21 @@ import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../contexts/AuthContext';
+import { User } from '../types/user';
 
 interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
 }
+interface RegisterProps {
+  onRegister: (user: User, token: string) => void;
+}
 
-const Register: React.FC = () => {
+const Register: React.FC<RegisterProps> = ({ onRegister }) => {
+  const { hasGoogleAuth } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -51,8 +58,9 @@ const Register: React.FC = () => {
       
       if (response.message) {
         setSuccess('Registration successful! Please log in to your account.');
+        onRegister(response.user, response.token);
         setTimeout(() => {
-          navigate('/login');
+          navigate('/dashboard');
         }, 2000);
       }
     } catch (error: any) {
@@ -60,6 +68,25 @@ const Register: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      const response = await authService.loginWithGoogle(credentialResponse.credential);
+      if (response.token && response.user) {
+        setSuccess('Registration successful! Redirecting to dashboard...');
+        onRegister(response.user, response.token);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Google registration failed, please try again later');
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google registration failed, please try again later');
   };
 
   return (
@@ -129,7 +156,7 @@ const Register: React.FC = () => {
                   />
                 </Form.Group>
 
-                <div className="d-grid">
+                <div className="d-grid gap-2">
                   <Button
                     variant="primary"
                     type="submit"
@@ -147,6 +174,26 @@ const Register: React.FC = () => {
                   </Button>
                 </div>
               </Form>
+
+              {hasGoogleAuth && (
+                <>
+                  <div className="text-center my-3">
+                    <span className="text-muted">- OR -</span>
+                  </div>
+
+                  <div className="d-grid">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      useOneTap
+                      theme="filled_blue"
+                      text="signup_with"
+                      shape="rectangular"
+                      width="100%"
+                    />
+                  </div>
+                </>
+              )}
 
               <hr className="my-4" />
 

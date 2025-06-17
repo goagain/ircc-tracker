@@ -15,6 +15,7 @@ import logging
 import os
 from utils.mongodb_index_manager import init_mongodb_indexes
 from models.database import db_instance
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +30,16 @@ logger = logging.getLogger(__name__)
 def create_app():
     """Create Flask application"""
     app = Flask(__name__, static_folder="static", static_url_path="")
+
+    # Configure proxy settings
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1,
+        x_port=1,
+        x_prefix=1
+    )
 
     # Configure application
     app.config["SECRET_KEY"] = Config.SECRET_KEY

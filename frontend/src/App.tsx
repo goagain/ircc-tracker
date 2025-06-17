@@ -126,7 +126,7 @@ const App: React.FC = () => {
                 />
                 <Route
                   path="/register"
-                  element={user ? <Navigate to="/dashboard" replace /> : <Register />}
+                  element={user ? <Navigate to="/dashboard" replace /> : <Register onRegister={handleLogin} />}
                 />
                 <Route path="/demo" element={<Demo />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
