@@ -80,26 +80,25 @@ class IRCCChecker:
                 # get current status and timestamp
                 current_status = application_details.get('status')
                 current_timestamp = application_details.get('lastUpdatedTime')
-                if not self._status_changed(credential, current_status, current_timestamp):
-                    return True
-                last_application_details = ApplicationRecord.get_latest_record(credential.application_number)
-                
-                application_record = ApplicationRecord.from_dict(application_details)
-                changes = self.compare_application_details(last_application_details, application_record)
-                if changes:
-                    # Send email notification
-                    if credential.email:
-                        email_sender.send_status_update_email(
-                            credential.email,
-                            credential.ircc_username,
-                            credential.application_number,
-                            '\n'.join([str(change) for change in changes]),
-                            datetime.fromtimestamp(current_timestamp / 1000)
-                        )
+                if self._status_changed(credential, current_status, current_timestamp):
+                    last_application_details = ApplicationRecord.get_latest_record(credential.application_number)
                     
-                    logger.info(f"Status change detected - User: {credential.ircc_username}, New status: {current_status}")
-                
-                application_record.save()
+                    application_record = ApplicationRecord.from_dict(application_details)
+                    changes = self.compare_application_details(last_application_details, application_record)
+                    if changes:
+                        # Send email notification
+                        if credential.email:
+                            email_sender.send_status_update_email(
+                                credential.email,
+                                credential.ircc_username,
+                                credential.application_number,
+                                '\n'.join([str(change) for change in changes]),
+                                datetime.fromtimestamp(current_timestamp / 1000)
+                            )
+                        
+                        logger.info(f"Status change detected - User: {credential.ircc_username}, New status: {current_status}")
+                    
+                    application_record.save()
                 # Update credential status
                 credential.update_status(current_status, current_timestamp)
                 credential.save()

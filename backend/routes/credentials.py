@@ -205,8 +205,11 @@ def update_credential(credential_id: str):
 def delete_credential(ircc_username: str):
     """Delete IRCC credentials"""
     try:
+        if request.current_user["role"] != "admin":
         # Find existing credentials
-        credentials = IRCCCredential.find_by_user_id(request.current_user["email"])
+            credentials = IRCCCredential.find_by_user_id(request.current_user["email"])
+        else:
+            credentials = IRCCCredential.get_all_active_credentials()
         credential = None
 
         for cred in credentials:
