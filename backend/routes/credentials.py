@@ -42,11 +42,12 @@ def upload_credential():
 
         ircc_agent = IRCCAgentFactory.get_ircc_agent(application_type)
 
+        login_error = ""
         # Verify IRCC credentials
         if not ircc_agent.verify_ircc_credentials(
             current_user_email, ircc_username, ircc_password
         ):
-            return jsonify({"error": "Invalid IRCC credentials"}), 400
+            login_error = "Invalid IRCC credentials"
 
         salt = encryption_manager.generate_salt()
         encrypted_password = encryption_manager.encrypt(salt, ircc_password)
@@ -59,35 +60,48 @@ def upload_credential():
             application_type=application_type,
             email=notification_email,
         )
-        application_summary = ircc_agent.get_application_summary(credential)
-        if not application_summary:
-            return jsonify({"error": "Failed to get application summary"}), 500
 
-        application_number = application_summary[0].application_number
-        credential.application_number = application_number
+        try:
+            application_summary = ircc_agent.get_application_summary(credential)
+            if not application_summary:
+                login_error += " Failed to get application summary."
+        except Exception as e:
+            login_error += f" Failed to get application summary. {str(e)}"
+
+        if not login_error:
+            application_number = application_summary[0].application_number
+            credential.application_number = application_number
 
         credential_id = credential.save()
-
         logger.info(
             "User %s uploaded IRCC credentials successfully: %s",
             current_user_email,
             ircc_username,
         )
 
-        return (
-            jsonify(
-                {
-                    "message": "IRCC credentials uploaded successfully",
-                    "credential_id": str(credential_id),
-                }
-            ),
-            201,
-        )
+        if login_error:
+            return (
+                jsonify(
+                    {
+                        "message": f"IRCC credentials uploaded successfully. But login may failed. {login_error}",
+                        "credential_id": str(credential_id),
+                    }
+                ),
+                201,
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "message": "IRCC credentials uploaded successfully",
+                        "credential_id": str(credential_id),
+                    }
+                ),
+                201,
+            )
 
     except Exception as e:
         logger.error("Upload IRCC credentials failed: %s", str(e))
-        if Config.DEBUG:
-            raise e
         return jsonify({"error": "Upload failed, please try again later"}), 500
 
 
