@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '../types/user';
 import tokenService from '../services/tokenService';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import configService from '../services/configService';
 
 interface AuthContextType {
   token: string | null;
@@ -18,6 +20,20 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => tokenService.getToken() ?? null);
   const [user, setUser] = useState<User | null>(null);
+  const [googleClientId, setGoogleClientId] = useState<string>('');
+
+  useEffect(() => {
+    const loadGoogleConfig = async () => {
+      try {
+        const config = await configService.getConfig();
+        setGoogleClientId(config.googleClientId);
+      } catch (error) {
+        console.error('Failed to fetch Google Client ID:', error);
+      }
+    };
+
+    loadGoogleConfig();
+  }, []);
 
   const login = (newToken: string, userData: User): void => {
     setToken(newToken);
@@ -31,10 +47,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenService.removeToken();
   };
 
+  if (!googleClientId) {
+    return (
+      <AuthContext.Provider value={{ token, user, login, logout }}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthContext.Provider value={{ token, user, login, logout }}>
+        {children}
+      </AuthContext.Provider>
+    </GoogleOAuthProvider>
   );
 };
 

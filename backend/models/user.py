@@ -7,9 +7,10 @@ from models.database import db_instance
 import bcrypt
 
 class User:
-    def __init__(self, email: str, password: str | None = None, role: str = 'user', is_active: bool = True):
+    def __init__(self, email: str, password: str | None = None, role: str = 'user', is_active: bool = True, google_id: str | None = None):
         self.email = email
         self.password_hash = self._hash_password(password) if password else None
+        self.google_id: str | None = google_id
         self.role = role  # 'admin' or 'user'
         self.is_active = is_active
         self.created_at = datetime.now(timezone.utc)
@@ -38,6 +39,7 @@ class User:
             'password_hash': self.password_hash,
             'role': self.role,
             'is_active': self.is_active,
+            'google_id': self.google_id,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -48,6 +50,7 @@ class User:
         user = cls.__new__(cls)
         user.email = data.get('email')
         user.password_hash = data.get('password_hash')
+        user.google_id = data.get('google_id')
         user.role = data.get('role', 'user')
         user.is_active = data.get('is_active', True)
         user.created_at = data.get('created_at', datetime.now(timezone.utc))

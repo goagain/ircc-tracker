@@ -23,6 +23,7 @@ class Config:
     SMTP_USERNAME = os.getenv('SMTP_USERNAME', '')
     SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
     FROM_EMAIL = os.getenv('FROM_EMAIL', '')
+    
     # Scheduled task configuration
     CHECK_INTERVAL_MINUTES = int(os.getenv('CHECK_INTERVAL_MINUTES', '10'))
     
@@ -38,8 +39,10 @@ class Config:
     IRCC_CITIZEN_CHECK_URL = os.getenv('IRCC_CITIZEN_CHECK_URL', 'https://tracker-suivi.apps.cic.gc.ca/en/login')
     IRCC_IMMIGRANT_CHECK_URL = os.getenv('IRCC_IMMIGRANT_CHECK_URL', 'https://ircc-tracker-suivi.apps.cic.gc.ca/en/login')
 
-    # Google Analytics
+    # Google configuration
     GOOGLE_ANALYTICS_ID = os.getenv('GOOGLE_ANALYTICS_ID')
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 # Example configuration file - copy as config.py and modify actual values
 EXAMPLE_ENV = """

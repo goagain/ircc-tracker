@@ -15,6 +15,7 @@ import CredentialForm from './pages/CredentialForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import authService from './services/authService';
 import tokenService from './services/tokenService';
+import configService from './services/configService';
 import { User } from './types/user';
 import GoogleAnalytics from './components/GoogleAnalytics';
 import Demo from './pages/Demo';
@@ -28,35 +29,47 @@ const theme = createTheme({
     secondary: {
       main: '#dc004e',
     },
-  },
+  }
 });
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check token stored in cookie
-    const token = tokenService.getToken();
-    if (token) {
-      authService.verifyToken(token)
-        .then(response => {
-          if (response.data.valid && response.data.user) {
-            setUser(response.data.user);
-          } else {
+    const initializeApp = async () => {
+      try {
+        // load token and config in parallel
+        const [token] = await Promise.all([
+          tokenService.getToken(),
+          configService.getConfig().catch(error => {
+            console.error('Failed to load config:', error);
+            setConfigError('Failed to load config, please refresh the page');
+          })
+        ]);
+
+        if (token) {
+          try {
+            const response = await authService.verifyToken(token);
+            if (response.data.valid && response.data.user) {
+              setUser(response.data.user);
+            } else {
+              tokenService.removeToken();
+            }
+          } catch (error) {
+            console.error('Token verification failed:', error);
             tokenService.removeToken();
           }
-        })
-        .catch(error => {
-          console.error('Token verification failed:', error);
-          tokenService.removeToken();
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+        }
+      } catch (error) {
+        console.error('App initialization failed:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeApp();
   }, []);
 
   const handleLogin = (userData: User, token: string): void => {
@@ -74,6 +87,16 @@ const App: React.FC = () => {
       <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (configError) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="alert alert-danger" role="alert">
+          {configError}
         </div>
       </div>
     );
@@ -102,6 +125,7 @@ const App: React.FC = () => {
                   path="/register"
                   element={user ? <Navigate to="/dashboard" replace /> : <Register />}
                 />
+                <Route path="/demo" element={<Demo />} />
 
                 {/* Protected routes */}
                 <Route
@@ -144,7 +168,7 @@ const App: React.FC = () => {
                 <Route
                   path="/admin"
                   element={
-                    <ProtectedRoute user={user} requireAdmin={true}>
+                    <ProtectedRoute user={user} requireAdmin>
                       {user && <AdminDashboard user={user} />}
                     </ProtectedRoute>
                   }
@@ -156,11 +180,9 @@ const App: React.FC = () => {
                 />
 
                 {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
-
-            <Footer />
           </div>
         </Router>
       </AuthProvider>

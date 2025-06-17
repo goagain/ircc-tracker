@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import configService from '../services/configService';
 
 declare global {
   interface Window {
@@ -8,47 +8,15 @@ declare global {
   }
 }
 
-const CACHE_KEY = 'google_analytics_id';
-const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-
-interface CacheData {
-  id: string;
-  timestamp: number;
-}
-
 const GoogleAnalytics = () => {
   const [analyticsId, setAnalyticsId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadAnalytics = async () => {
       try {
-        // Check cache first
-        const cachedData = localStorage.getItem(CACHE_KEY);
-        if (cachedData) {
-          const { id, timestamp }: CacheData = JSON.parse(cachedData);
-          const now = Date.now();
-          
-          // If cache is not expired, use cached data
-          if (now - timestamp < CACHE_DURATION) {
-            if (id) {
-              setAnalyticsId(id);
-              initializeGoogleAnalytics(id);
-            }
-            return;
-          }
-        }
-
-        // If cache does not exist or is expired, get from server
-        const response = await axios.get('/api/config/analytics');
-        const id = response.data.googleAnalyticsId;
-        
-        // Update cache
+        const config = await configService.getConfig();
+        const id = config.googleAnalyticsId;
         if (id) {
-          const cacheData: CacheData = {
-            id,
-            timestamp: Date.now()
-          };
-          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
           setAnalyticsId(id);
           initializeGoogleAnalytics(id);
         }
