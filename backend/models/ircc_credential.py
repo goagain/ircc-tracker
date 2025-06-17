@@ -24,7 +24,7 @@ class IRCCCredential:
     def to_dict(self):
         """Convert to dictionary format"""
         return {
-            'id': self.id,
+            'id': str(self.id),
             'user_id': self.user_id,
             'ircc_username': self.ircc_username,
             'salt': self.salt,
@@ -80,7 +80,9 @@ class IRCCCredential:
             return existing_credential['_id']
         else:
             # Create new credential
-            result = collection.insert_one(self.to_dict())
+            credential_dict = self.to_dict()
+            credential_dict.pop('_id', None)  # 移除id字段
+            result = collection.insert_one(credential_dict)
             return result.inserted_id
     
     @classmethod
