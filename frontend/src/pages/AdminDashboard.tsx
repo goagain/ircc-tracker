@@ -36,9 +36,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadStats();
-  }, []);
+    loadStats(); 
+    loadCredentials();
 
+  }, []);
   const loadStats = async (): Promise<void> => {
     try {
       setLoading(true);
@@ -55,6 +56,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCredentials = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const response = await credentialService.getAllCredentials();
+      setCredentials(response.credentials);
+    } catch (error: any) {
+      setError('Failed to load credentials: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleDeleteCredential = async (irccUsername: string): Promise<void> => {
+    if (window.confirm(`Are you sure you want to delete the credential "${irccUsername}"?`)) {
+      try {
+        await credentialService.deleteCredential(irccUsername);
+        await loadCredentials(); // Reload the list
+      } catch (error: any) {
+        setError('Failed to delete credential: ' + (error.response?.data?.error || error.message));
+      }
     }
   };
 
@@ -208,14 +231,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         <Col>
           <CredentialsList
             credentials={credentials}
-            onDelete={async (id) => {
-              try {
-                await credentialService.deleteCredential(id);
-                await loadStats();
-              } catch (error: any) {
-                setError(error.response?.data?.error || 'Failed to delete credential');
-              }
-            }}
+            onDelete={handleDeleteCredential}
           />
         </Col>
       </Row>
