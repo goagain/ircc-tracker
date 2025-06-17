@@ -118,12 +118,12 @@ class ApplicationRecord:
                     "activity": record.activity,
                     "loadTime": record.load_time,
                     "title": {
-                        "en": record.title.en,
-                        "fr": record.title.fr
+                        "en": record.title.en if record.title else "",
+                        "fr": record.title.fr if record.title else ""
                     },
                     "text": {
-                        "en": record.text.en,
-                        "fr": record.text.fr
+                        "en": record.text.en if record.text else "",
+                        "fr": record.text.fr if record.text else ""
                     }
                 }
                 for record in self.history

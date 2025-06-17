@@ -9,10 +9,10 @@ class MongoDBIndexManager:
         self.indexes = {
             'ircc_credentials': [
                 {
-                    'name': 'user_id_application_number',
+                    'name': 'user_id_ircc_username',
                     'keys': [
                         ('user_id', ASCENDING),
-                        ('application_number', ASCENDING)
+                        ('ircc_username', ASCENDING)
                     ],
                     'unique': True
                 },

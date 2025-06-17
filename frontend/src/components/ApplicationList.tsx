@@ -16,10 +16,10 @@ const ApplicationList: React.FC = () => {
             try {
                 const response = await applicationService.getAllApplications();
                 const appRecords: ApplicationRecord[] = response.data.applications.map(app => ({
-                    application_number: app.uci, // 使用 UCI 作为临时应用编号
+                    application_number: app.uci,
                     uci: app.uci,
                     status: app.status,
-                    last_updated_time: Date.now(), // 使用当前时间作为最后更新时间
+                    last_updated_time: Date.now(),
                     activities: app.activities,
                     history: app.history.map(record => ({
                         time: record.time,

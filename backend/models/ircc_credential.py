@@ -24,6 +24,7 @@ class IRCCCredential:
     def to_dict(self):
         """Convert to dictionary format"""
         return {
+            'id': self.id,
             'user_id': self.user_id,
             'ircc_username': self.ircc_username,
             'salt': self.salt,

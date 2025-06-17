@@ -73,10 +73,9 @@ def get_user_applications():
         for credential in credentials:
             try:
                 ircc_agent = IRCCAgentFactory.get_ircc_agent(credential.application_type)
-                application_data = ircc_agent.get_application_details(credential)
+                application_record = ircc_agent.get_application_details(credential)
                 
-                if application_data:
-                    application_record = ApplicationRecord.from_dict(application_data)
+                if application_record:
                     applications.append(application_record.to_dict())
             except Exception as e:
                 # 如果获取某个申请详情失败，记录错误但继续处理其他申请

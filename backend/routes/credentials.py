@@ -63,7 +63,7 @@ def upload_credential():
         if not application_summary:
             return jsonify({"error": "Failed to get application summary"}), 500
 
-        application_number = application_summary.get("apps", [{}])[0].get("appNumber")
+        application_number = application_summary[0].application_number
         credential.application_number = application_number
 
         credential_id = credential.save()

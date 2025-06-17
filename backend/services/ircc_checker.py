@@ -11,6 +11,7 @@ from utils.email_sender import email_sender
 from models.ircc_credential import IRCCCredential
 from config import Config
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -78,13 +79,12 @@ class IRCCChecker:
             
             if application_details:
                 # get current status and timestamp
-                current_status = application_details.get('status')
-                current_timestamp = application_details.get('lastUpdatedTime')
+                current_status = application_details.status
+                current_timestamp = application_details.last_updated_time
                 if self._status_changed(credential, current_status, current_timestamp):
-                    last_application_details = ApplicationRecord.get_latest_record(credential.application_number)
+                    last_application_record = ApplicationRecord.get_latest_record(credential.application_number)
                     
-                    application_record = ApplicationRecord.from_dict(application_details)
-                    changes = self.compare_application_details(last_application_details, application_record)
+                    changes = self.compare_application_details(last_application_record, application_details)
                     if changes:
                         # Send email notification
                         if credential.email:
@@ -98,7 +98,7 @@ class IRCCChecker:
                         
                         logger.info(f"Status change detected - User: {credential.ircc_username}, New status: {current_status}")
                     
-                    application_record.save()
+                    application_details.save()
                 # Update credential status
                 credential.update_status(current_status, current_timestamp)
                 credential.save()
@@ -111,6 +111,7 @@ class IRCCChecker:
         except Exception as e:
             error_msg = f"Error checking status for user {credential.ircc_username}: {str(e)}"
             logger.error(error_msg)
+            logger.error(traceback.format_exc())
             raise
     
     def check_all_credentials(self):
@@ -127,14 +128,26 @@ class IRCCChecker:
                     success_count += 1
             except Exception as e:
                 logger.error(f"Exception occurred while checking credential: {str(e)}")
+                logger.error(traceback.format_exc())
         logger.info(f"Status check completed: {success_count}/{total_count} successful")
         return success_count, total_count
     
-    def _make_ircc_request(self, credential: IRCCCredential):
+    def _make_ircc_request(self, credential: IRCCCredential) -> ApplicationRecord:
         """Send request to IRCC website"""
         try:            
             ircc_agent = IRCCAgentFactory.get_ircc_agent(credential.application_type)
             
+            if credential.application_number is None:
+                logger.warning(f"Application number is not set for user {credential.ircc_username}")
+                ircc_agent = IRCCAgentFactory.get_ircc_agent(credential.application_type)
+                application_summary = ircc_agent.get_application_summary(credential)
+                if application_summary:
+                    credential.application_number = application_summary[0].application_number
+                    credential.save()
+                else:
+                    logger.warning(f"Failed to get application summary for user {credential.ircc_username}")
+                    return False
+
             return ircc_agent.get_application_details(credential)
         except requests.exceptions.Timeout:
             raise Exception("Request timeout, please try again later")
