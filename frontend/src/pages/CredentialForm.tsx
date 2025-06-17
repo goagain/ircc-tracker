@@ -89,6 +89,13 @@ const CredentialForm: React.FC<CredentialFormProps> = ({ user }) => {
     }
   };
 
+  const irccLink = function(isCitizen: boolean) {
+    if (isCitizen) {
+      return 'https://tracker-suivi.apps.cic.gc.ca/en/login';
+    } else {
+      return 'https://ircc-tracker-suivi.apps.cic.gc.ca/en/login';
+    }
+  }
   return (
     <Container className="py-5">
       <Row className="justify-content-center">
@@ -158,18 +165,18 @@ const CredentialForm: React.FC<CredentialFormProps> = ({ user }) => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>IRCC Username</Form.Label>
+                  <Form.Label>IRCC Username (UCI Number)</Form.Label>
                   <Form.Control
                     type="text"
                     name="ircc_username"
                     value={formData.ircc_username}
                     onChange={handleChange}
-                    placeholder="Enter your IRCC tracker username"
+                    placeholder="Enter your IRCC tracker username (UCI Number)"
                     required
                     disabled={loading || !!credentialId}
                   />
                   <Form.Text className="text-muted">
-                    This is the username you use to log in to your IRCC Tracker account
+                    This is the username (UCI Number) you use to log in to your <a href={irccLink(formData.application_type === 'citizen')} target="_blank" rel="noopener noreferrer">IRCC Tracker</a> account
                   </Form.Text>
                 </Form.Group>
 

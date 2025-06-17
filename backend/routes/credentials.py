@@ -202,16 +202,9 @@ def update_credential(credential_id: str):
 
 @credentials_bp.route("/<ircc_username>", methods=["DELETE"])
 @require_auth
-def delete_credential(ircc_username):
+def delete_credential(ircc_username: str):
     """Delete IRCC credentials"""
     try:
-        data = request.get_json()
-
-        if not data or not data.get("ircc_username"):
-            return jsonify({"error": "IRCC username cannot be empty"}), 400
-
-        ircc_username = data.get("ircc_username").strip()
-
         # Find existing credentials
         credentials = IRCCCredential.find_by_user_id(request.current_user["email"])
         credential = None
