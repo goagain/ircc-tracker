@@ -17,6 +17,7 @@ import authService from './services/authService';
 import tokenService from './services/tokenService';
 import { User } from './types/user';
 import GoogleAnalytics from './components/GoogleAnalytics';
+import Demo from './pages/Demo';
 
 const theme = createTheme({
   palette: {
@@ -89,19 +90,19 @@ const App: React.FC = () => {
             <main className="flex-grow-1">
               <Routes>
                 {/* Public routes */}
-                <Route 
-                  path="/" 
-                  element={user ? <Navigate to="/dashboard" replace /> : <Home />} 
+                <Route
+                  path="/"
+                  element={user ? <Navigate to="/dashboard" replace /> : <Home />}
                 />
-                <Route 
-                  path="/login" 
-                  element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />} 
+                <Route
+                  path="/login"
+                  element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />}
                 />
-                <Route 
-                  path="/register" 
-                  element={user ? <Navigate to="/dashboard" replace /> : <Register />} 
+                <Route
+                  path="/register"
+                  element={user ? <Navigate to="/dashboard" replace /> : <Register />}
                 />
-                
+
                 {/* Protected routes */}
                 <Route
                   path="/dashboard"
@@ -111,7 +112,7 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="/change-password"
                   element={
@@ -120,7 +121,7 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="/credentials/new"
                   element={
@@ -129,7 +130,7 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="/credentials/edit/:credentialId"
                   element={
@@ -138,7 +139,7 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-                
+
                 {/* Admin routes */}
                 <Route
                   path="/admin"
@@ -148,12 +149,17 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-                
+
+                <Route
+                  path="/demo"
+                  element={<Demo />}
+                />
+
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
-            
+
             <Footer />
           </div>
         </Router>

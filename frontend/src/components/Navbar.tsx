@@ -122,12 +122,17 @@ const Navbar: React.FC<NavigationBarProps> = ({ user, onLogout }) => {
               </Nav>
             </>
           ) : (
-            <Nav className="ms-auto">
-              <BuyMeACoffeeButton />
-              <GitHubStarButton />
-              <Nav.Link as={Link} to="/login">Login</Nav.Link>
-              <Nav.Link as={Link} to="/register">Register</Nav.Link>
-            </Nav>
+            <>
+              <Nav className="me-auto">
+                <Nav.Link as={Link} to="/demo">Demo</Nav.Link>
+              </Nav>
+              <Nav className="ms-auto">
+                <BuyMeACoffeeButton />
+                <GitHubStarButton />
+                <Nav.Link as={Link} to="/login">Login</Nav.Link>
+                <Nav.Link as={Link} to="/register">Register</Nav.Link>
+              </Nav>
+            </>
           )}
         </BootstrapNavbar.Collapse>
       </Container>

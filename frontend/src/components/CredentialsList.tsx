@@ -3,43 +3,11 @@ import { Card, Table, Badge, Button, Collapse, ProgressBar, Row, Col } from 'rea
 import { Link } from 'react-router-dom';
 import applicationService from '../services/applicationService';
 import { formatDate } from '../utils/dateUtils';
-
-interface Activity {
-  activity: string;
-  status: string;
-  order: number;
-}
-
-interface HistoryRecord {
-  time: number;
-  isNew: boolean;
-  isWaiting: boolean;
-  type: string;
-  title: {
-    en?: string;
-    fr?: string;
-  };
-  text: {
-    en?: string;
-    fr?: string;
-  };
-  activity?: string;
-}
+import { Credential, Activity, HistoryRecord } from '../types/tracking';
+import { generateDemoCredentials } from '../utils/demoData';
 
 interface ApplicationDetails {
   details: any; // TODO: Define proper type for application details
-}
-
-interface Credential {
-  id: string;
-  user_id: string;
-  ircc_username: string;
-  email: string;
-  is_active: boolean;
-  last_status: string;
-  last_checked: string;
-  last_timestamp: string;
-  application_number: string;
 }
 
 interface CredentialsListProps {
@@ -52,18 +20,20 @@ interface CredentialsListProps {
   emptySubMessage?: string;
   addButtonText?: string;
   addButtonLink?: string;
+  isDemo?: boolean;
 }
 
-const CredentialsList: React.FC<CredentialsListProps> = ({ 
-  credentials, 
-  onDelete, 
+const CredentialsList: React.FC<CredentialsListProps> = ({
+  credentials,
+  onDelete,
   showUserColumn = false,
   showActions = true,
   title = "IRCC Credentials",
   emptyMessage = "No credentials have been added yet",
   emptySubMessage = "Add your IRCC username and password to start tracking application status",
   addButtonText = "Add New Credential",
-  addButtonLink = "/credentials/new"
+  addButtonLink = "/credentials/new",
+  isDemo = false
 }) => {
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [applicationDetails, setApplicationDetails] = useState<Record<string, ApplicationDetails>>({});
@@ -75,6 +45,16 @@ const CredentialsList: React.FC<CredentialsListProps> = ({
       ...prev,
       [index]: newExpandedState
     }));
+
+    if (isDemo) {
+      setApplicationDetails(prev => ({
+        ...prev,
+        [credential.application_number]: {
+          details: generateDemoCredentials()[index].details
+        }
+      }));
+      return;
+    }
 
     // If expanded and details not loaded, then load
     if (newExpandedState && !applicationDetails[credential.application_number]) {
@@ -267,7 +247,7 @@ const CredentialsList: React.FC<CredentialsListProps> = ({
             <tbody>
               {credentials.map((credential, index) => (
                 <React.Fragment key={index}>
-                  <tr 
+                  <tr
                     className="cursor-pointer"
                     onClick={() => toggleRow(index, credential)}
                     style={{ cursor: 'pointer' }}

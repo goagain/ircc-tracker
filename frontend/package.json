@@ -54,21 +54,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": {
-    "/api": {
-      "target": "http://localhost:5000",
-      "secure": false,
-      "changeOrigin": true,
-      "pathRewrite": {
-        "^/api": "/api"
-      },
-      "headers": {
-        "Connection": "keep-alive"
-      },
-      "context": ["/api"],
-      "host": "localhost"
-    }
-  },
+  "proxy": "http://localhost:5000",
   "devDependencies": {
     "@types/node": "^22.15.30"
   }
