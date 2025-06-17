@@ -137,7 +137,10 @@ def get_credential(credential_id):
         if not credential:
             return jsonify({"error": "Specified credentials not found"}), 404
 
-        if credential.user_id != request.current_user["email"]:
+        if (
+            credential.user_id != request.current_user["email"]
+            and request.current_user["role"] != "admin"
+        ):
             return jsonify({"error": "Unauthorized"}), 403
 
         return jsonify(credential.to_dict()), 200
@@ -166,7 +169,10 @@ def update_credential(credential_id: str):
         if not credential:
             return jsonify({"error": "Specified credentials not found"}), 404
 
-        if credential.user_id != request.current_user["email"]:
+        if (
+            credential.user_id != request.current_user["email"]
+            and request.current_user["role"] != "admin"
+        ):
             return jsonify({"error": "Unauthorized"}), 403
 
         # Update credential information
@@ -207,7 +213,7 @@ def delete_credential(ircc_username: str):
     """Delete IRCC credentials"""
     try:
         if request.current_user["role"] != "admin":
-        # Find existing credentials
+            # Find existing credentials
             credentials = IRCCCredential.find_by_user_id(request.current_user["email"])
         else:
             credentials = IRCCCredential.get_all_active_credentials()
