@@ -24,6 +24,9 @@ const Home: React.FC = () => {
                 <Link to="/login" className="btn btn-outline-light btn-lg">
                   Already have an account? Login
                 </Link>
+                <Link to="/demo" className="btn btn-outline-light btn-lg">
+                  or Try Demo
+                </Link>
               </div>
             </Col>
             <Col lg={6} className="text-center">
