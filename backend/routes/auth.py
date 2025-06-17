@@ -62,11 +62,15 @@ def register():
 
         logger.info(f"New user registered successfully: {email}")
 
+        # Generate JWT token
+        token = create_token(user.email, user.role)
+
         return (
             jsonify(
                 {
                     "message": "Registration successful",
                     "user": {"email": user.email, "role": user.role},
+                    "token": token,
                 }
             ),
             201,

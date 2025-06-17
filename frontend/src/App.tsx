@@ -216,8 +216,8 @@ const Footer: React.FC = () => (
           <p className="mb-0">Keep you informed about your Canadian immigration application progress</p>
         </div>
         <div className="col-md-6 text-md-end">
-          <p className="mb-0">
-            © 2024 Goagain's IRCC Tracker. All rights reserved.
+          <p className="mb-0" style={{ color: 'gray' }}>
+            © 2025 Goagain's IRCC Tracker. All rights reserved.
           </p>
           <div className="mt-2">
             <Link to="/privacy" className="text-decoration-none me-3">Privacy Policy</Link>
