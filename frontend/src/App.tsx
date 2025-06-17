@@ -19,6 +19,9 @@ import configService from './services/configService';
 import { User } from './types/user';
 import GoogleAnalytics from './components/GoogleAnalytics';
 import Demo from './pages/Demo';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import { Link } from 'react-router-dom';
 
 const theme = createTheme({
   palette: {
@@ -126,6 +129,8 @@ const App: React.FC = () => {
                   element={user ? <Navigate to="/dashboard" replace /> : <Register />}
                 />
                 <Route path="/demo" element={<Demo />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
 
                 {/* Protected routes */}
                 <Route
@@ -183,6 +188,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
+            <Footer />
           </div>
         </Router>
       </AuthProvider>
@@ -202,7 +208,7 @@ const NotFound: React.FC = () => (
 
 // Footer component
 const Footer: React.FC = () => (
-  <footer className="footer">
+  <footer className="footer mt-auto py-3 bg-light">
     <Container>
       <div className="row">
         <div className="col-md-6">
@@ -213,6 +219,10 @@ const Footer: React.FC = () => (
           <p className="mb-0">
             © 2024 Goagain's IRCC Tracker. All rights reserved.
           </p>
+          <div className="mt-2">
+            <Link to="/privacy" className="text-decoration-none me-3">Privacy Policy</Link>
+            <Link to="/terms" className="text-decoration-none">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </Container>
