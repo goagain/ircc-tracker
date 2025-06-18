@@ -197,9 +197,10 @@ class IRCCChecker:
                 )
 
                 # Check if retry is needed
+                current_time = datetime.now(timezone.utc)
                 if (
                     credential.next_retry_time
-                    and datetime.now(timezone.utc) < credential.next_retry_time
+                    and current_time < credential.next_retry_time
                 ):
                     logger.info(
                         f"Skipping retry for user {credential.ircc_username}, next retry at {credential.next_retry_time}"

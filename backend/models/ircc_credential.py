@@ -63,7 +63,13 @@ class IRCCCredential:
         credential.application_type = data.get('application_type')
         credential.application_number = data.get('application_number')
         credential.retry_count = data.get('retry_count', 0)
-        credential.next_retry_time = data.get('next_retry_time')
+        
+        # Ensure next_retry_time is timezone-aware
+        next_retry_time = data.get('next_retry_time')
+        if next_retry_time and next_retry_time.tzinfo is None:
+            next_retry_time = next_retry_time.replace(tzinfo=timezone.utc)
+        credential.next_retry_time = next_retry_time
+        
         return credential
     
     def save(self):
