@@ -78,10 +78,13 @@ class IRCCCredential:
         })
         
         if existing_credential:
+            credential_dict = self.to_dict()
+            credential_dict.pop('_id', None)  # Remove id field
+
             # Update existing credential
             collection.update_one(
                 {'_id': existing_credential['_id']},
-                {'$set': self.to_dict()}
+                {'$set': credential_dict}
             )
             return existing_credential['_id']
         else:
