@@ -2,16 +2,18 @@ from types import TracebackType
 import requests
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 from models.application_records import ApplicationRecord
 from utils.ircc_agent import IRCCAgentFactory
 from utils.encryption import encryption_manager
 from utils.email_sender import email_sender
 from models.ircc_credential import IRCCCredential
+from models.retry_history import RetryHistory
 from config import Config
 import logging
 import traceback
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -139,16 +141,37 @@ class IRCCChecker:
             
             if credential.application_number is None:
                 logger.warning(f"Application number is not set for user {credential.ircc_username}")
-                ircc_agent = IRCCAgentFactory.get_ircc_agent(credential.application_type)
-                application_summary = ircc_agent.get_application_summary(credential)
-                if application_summary:
-                    credential.application_number = application_summary[0].application_number
-                    credential.save()
-                else:
-                    logger.warning(f"Failed to get application summary for user {credential.ircc_username}")
+                
+                # Check if retry is needed
+                if credential.next_retry_time and datetime.now(timezone.utc) < credential.next_retry_time:
+                    logger.info(f"Skipping retry for user {credential.ircc_username}, next retry at {credential.next_retry_time}")
+                    return False
+                
+                try:
+                    application_summary = ircc_agent.get_application_summary(credential)
+                    if application_summary:
+                        credential.application_number = application_summary[0].application_number
+                        credential.save()
+                        credential.update_retry_info(success=True)  # Reset retry info on success
+                        return ircc_agent.get_application_details(credential)
+                except Exception as e:
+                    logger.warning(f"Failed to get application summary for user {credential.ircc_username}: {str(e)}")
+                    logger.error(traceback.format_exc())
+                    credential.update_retry_info(success=False)  # Update retry info on failure
                     return False
 
-            return ircc_agent.get_application_details(credential)
+            # Get application details
+            try:
+                application_details = ircc_agent.get_application_details(credential)
+                if application_details:
+                    credential.update_retry_info(success=True)  # Reset retry info on successful connection
+                return application_details
+            except Exception as e:
+                logger.warning(f"Failed to get application details for user {credential.ircc_username}: {str(e)}")
+                logger.error(traceback.format_exc())
+                credential.update_retry_info(success=False)  # Update retry info on failure
+                raise
+
         except requests.exceptions.Timeout:
             raise Exception("Request timeout, please try again later")
         except requests.exceptions.RequestException as e:

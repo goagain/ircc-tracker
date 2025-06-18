@@ -1,6 +1,6 @@
 """IRCC credential model for storing and managing user immigration application credentials."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Self
 from bson import ObjectId
 from models.database import db_instance
@@ -21,6 +21,8 @@ class IRCCCredential:
         self.last_timestamp = None
         self.application_type = application_type
         self.application_number: str | None = application_number
+        self.retry_count = 0
+        self.next_retry_time: datetime | None = None
     def to_dict(self):
         """Convert to dictionary format"""
         return {
@@ -37,7 +39,9 @@ class IRCCCredential:
             'last_status': self.last_status,
             'last_timestamp': self.last_timestamp,
             'application_type': self.application_type,
-            'application_number': self.application_number
+            'application_number': self.application_number,
+            'retry_count': self.retry_count,
+            'next_retry_time': self.next_retry_time
         }
     
     @classmethod
@@ -58,6 +62,8 @@ class IRCCCredential:
         credential.last_timestamp = data.get('last_timestamp')
         credential.application_type = data.get('application_type')
         credential.application_number = data.get('application_number')
+        credential.retry_count = data.get('retry_count', 0)
+        credential.next_retry_time = data.get('next_retry_time')
         return credential
     
     def save(self):
@@ -143,4 +149,46 @@ class IRCCCredential:
         collection.update_one(
             {'_id': self.id},
             {'$set': {'is_active': False, 'updated_at': self.updated_at}}
+        )
+
+    def update_retry_info(self, success: bool = True):
+        """Update retry information"""
+        if success:
+            self.retry_count = 0
+            self.next_retry_time = None
+        else:
+            self.retry_count += 1
+            # Retry time strategy:
+            # 1st attempt: 10 minutes
+            # 2nd attempt: 30 minutes
+            # 3rd attempt: 1 hour
+            # 4th attempt: 2 hours
+            # 5th attempt: 4 hours
+            # 6th attempt: 12 hours
+            # 7th attempt and above: 24 hours
+            if self.retry_count == 1:
+                wait_hours = 10/60  # 10 minutes
+            elif self.retry_count == 2:
+                wait_hours = 30/60  # 30 minutes
+            elif self.retry_count == 3:
+                wait_hours = 1
+            elif self.retry_count == 4:
+                wait_hours = 2
+            elif self.retry_count == 5:
+                wait_hours = 4
+            elif self.retry_count == 6:
+                wait_hours = 12
+            else:
+                wait_hours = 24
+            
+            self.next_retry_time = datetime.now(timezone.utc) + timedelta(hours=wait_hours)
+        
+        collection = db_instance.get_collection('ircc_credentials')
+        collection.update_one(
+            {'_id': self.id},
+            {'$set': {
+                'retry_count': self.retry_count,
+                'next_retry_time': self.next_retry_time,
+                'updated_at': datetime.now(timezone.utc)
+            }}
         ) 
