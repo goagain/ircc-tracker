@@ -175,7 +175,7 @@ def update_credential(credential_id: str):
 
         credential_id = ObjectId(credential_id)
         ircc_password: str | None = data.get("ircc_password")
-        notification_email = data.get("notification_email")
+        notification_email = data.get("email")
 
         # Find existing credentials
         credential = IRCCCredential.find_by_id(credential_id)
